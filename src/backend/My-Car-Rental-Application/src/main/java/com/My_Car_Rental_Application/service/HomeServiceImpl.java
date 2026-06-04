@@ -1,0 +1,73 @@
+package com.My_Car_Rental_Application.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+
+import com.My_Car_Rental_Application.dto.UserLoginDto;
+import com.My_Car_Rental_Application.dto.UserRequestDto;
+import com.My_Car_Rental_Application.dto.UserResponseDto;
+import com.My_Car_Rental_Application.entity.AdminCarsData;
+import com.My_Car_Rental_Application.entity.UserRequest;
+import com.My_Car_Rental_Application.repository.CarsDataRepository;
+import com.My_Car_Rental_Application.repository.HomeRepository;
+
+@Service
+public class HomeServiceImpl implements HomeService{
+
+	private HomeRepository homeRepository;
+	
+	private CarsDataRepository cd;
+	
+	public HomeServiceImpl(HomeRepository userRepository,CarsDataRepository cd) {
+		this.homeRepository=userRepository;
+		this.cd=cd;
+	}
+	
+	@Override
+	public String doRegister(UserRequestDto request) {
+		UserRequest userRequest=new UserRequest();
+		userRequest.setFirstName(request.getFirstName());
+		userRequest.setLastName(request.getLastName());
+		userRequest.setEmail(request.getEmail());
+		userRequest.setPhone(request.getPhone());
+		userRequest.setPassword(request.getPassword());
+		userRequest.setAvatar(request.getAvatar());
+		userRequest.setRole("USER");
+		
+		homeRepository.save(userRequest);
+		return "User Register Successfully";
+	}
+
+
+	@Override
+	public UserResponseDto doLogin(UserLoginDto request) {
+		UserRequest user= homeRepository.findByEmail(request.getEmail());
+		System.out.println("UserRequest : "+user);
+		
+		if(user != null ) {
+			System.out.println("User : "+user);
+			return new UserResponseDto(user.getFirstName(),user.getLastName(),user.getEmail(),user.getPhone(),user.getAvatar(),user.getRole());
+		}else {
+			System.out.println("User is not Matched");
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public List<AdminCarsData> allCars() {
+		return cd.findAll();
+	}
+
+	@Override
+	public AdminCarsData findCarById(int id) {
+		return cd.findById(id).orElse(null);
+	}
+	
+	
+
+
+
+}
