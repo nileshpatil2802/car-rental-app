@@ -1,0 +1,18 @@
+/* App Styles */
+#root {
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Disable transitions for animations */
+.animate-fadeIn,
+.animate-slideUp,
+.animate-slideDown {
+  transition: none;
+}
