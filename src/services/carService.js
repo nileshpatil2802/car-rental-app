@@ -4,8 +4,7 @@ const CAR_IMAGE_BASE_URL ="http://localhost:8080/car-images";
 
 const API_URL = "http://localhost:8080/home/cars";
 const LOGIN = "http://localhost:8080/home/login";
-const FORGOT_PASSWORD =
-  "http://localhost:8080/home/forgot-password";
+const FORGOT_PASSWORD = "http://localhost:8080/home/forgot-password";
 
 const CART_API_URL = "http://localhost:8080/user/getCarts";
 const DELETE_CART_BY_ID = "http://localhost:8080/user/deleteCarts";
