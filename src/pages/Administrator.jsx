@@ -390,8 +390,16 @@ const Administrator = () => {
 
   const REVENUE_STATUSES = ["CONFIRMED", "ACTIVE", "COMPLETED"];
 
-  const getBookingStatusValue = (booking) =>
-    String(booking.bookingStatus || "").toUpperCase();
+  // const getBookingStatusValue = (booking) =>
+  //   String( booking.status || booking.bookingStatus || "").toUpperCase();
+
+  const getBookingStatusValue = (booking) => {
+  return String(
+    booking.status ||
+    booking.bookingStatus ||
+    "PENDING"
+  ).toUpperCase();
+};
 
   const getBookingRevenueDate = (booking) => {
     // Frontend-only report date. Prefer payment/creation date when available.
@@ -1823,117 +1831,269 @@ const Administrator = () => {
                       Number(totalBookingActionId) === Number(booking.id);
 
                     return (
+                      // <tr
+                      //   key={booking.bookingId}
+                      //   className="border-b hover:bg-gray-50 transition"
+                      // >
+                      //   <td className="p-3">
+                      //     <p className="font-bold text-primary">
+                      //       #{booking.bookingId}
+                      //     </p>
+
+                      //     <p className="text-xs text-gray-500">
+                      //       Car ID: {booking.carId || "N/A"}
+                      //     </p>
+                      //   </td>
+
+                      //   {/* <td className="p-3">
+                      //     <p className="font-semibold">
+                      //       User ID: {booking.userId || "N/A"}
+                      //     </p>
+                      //     {getUserEmail(booking) && (
+                      //       <p className="text-xs text-gray-500 max-w-[180px] truncate">
+                      //         {getUserEmail(booking.email)}
+                      //       </p>
+                      //     )}
+                      //   </td> */}
+                      //   <td className="p-3">
+                      //     <p className="font-semibold">
+                      //       {getUserName(booking)}
+                      //     </p>
+                      //     {getUserEmail(booking) && (
+                      //       <p className="text-xs text-gray-500 max-w-[180px] truncate">
+                      //         {getUserEmail(booking)}
+                      //       </p>
+                      //     )}
+                      //   </td>
+
+                      //   <td className="p-3">
+                      //     <p className="font-semibold">
+                      //       {booking.carName || booking.car?.name || "N/A"}
+                      //     </p>
+                      //     <p className="text-xs text-gray-500">
+                      //       {booking.brand || booking.car?.brand || "N/A"}
+                      //     </p>
+                      //   </td>
+
+                      //   <td className="p-3">
+                      //     <p className="font-medium">
+                      //       {formatDate(booking.pickupDate)}
+                      //     </p>
+                      //     <p className="text-xs text-gray-500">
+                      //       to {formatDate(booking.dropoffDate)}
+                      //     </p>
+                      //     <p className="text-xs font-semibold mt-1">
+                      //       {booking.days || 0} day
+                      //       {Number(booking.days) === 1 ? "" : "s"}
+                      //     </p>
+                      //   </td>
+
+                      //   <td className="p-3">
+                      //     <p className="font-medium">
+                      //       {booking.pickupLocation || "N/A"}
+                      //     </p>
+                      //     <p className="text-xs text-gray-500">
+                      //       to {booking.dropoffLocation || "N/A"}
+                      //     </p>
+                      //   </td>
+
+                      //   <td className="p-3">
+                      //     <span className="text-xs font-semibold bg-gray-100 px-2 py-1 rounded-full">
+                      //       {String(booking.tripDriverType || "N/A").replaceAll(
+                      //         "_",
+                      //         " ",
+                      //       )}
+                      //     </span>
+                      //   </td>
+
+                      //   <td className="p-3">
+                      //     <p className="font-bold text-secondary">
+                      //       {formatMoney(booking.total)}
+                      //     </p>
+                      //     <p className="text-xs text-gray-500">
+                      //       {formatMoney(booking.price)} / day
+                      //     </p>
+                      //   </td>
+
+                      //   <td className="p-3">
+                      //     <select
+                      //       value={status}
+                      //       disabled={isUpdating}
+                      //       onChange={(event) =>
+                      //         handleTotalBookingStatus(
+                      //           booking.id,
+                      //           event.target.value,
+                      //         )
+                      //       }
+                      //       className={`border rounded-lg px-3 py-2 text-xs font-semibold outline-none disabled:opacity-50 ${getStatusClass(
+                      //         status,
+                      //       )}`}
+                      //     >
+                      //       {BOOKING_STATUS_OPTIONS.map((statusOption) => (
+                      //         <option key={statusOption} value={statusOption}>
+                      //           {statusOption}
+                      //         </option>
+                      //       ))}
+                      //     </select>
+                      //   </td>
+
+                      //   <td className="p-3">
+                      //     <div className="flex justify-center">
+                      //       <button
+                      //         type="button"
+                      //         disabled={isUpdating}
+                      //         onClick={() =>
+                      //           handleDeleteTotalBooking(booking.id)
+                      //         }
+                      //         className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white p-2.5 rounded-lg"
+                      //         title="Delete Booking"
+                      //       >
+                      //         <FiTrash2 />
+                      //       </button>
+                      //     </div>
+                      //   </td>
+                      // </tr>
                       <tr
-                        key={booking.id}
-                        className="border-b hover:bg-gray-50 transition"
-                      >
-                        <td className="p-3">
-                          <p className="font-bold text-primary">
-                            #{booking.id}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Car ID: {booking.car?.id || booking.carId || "N/A"}
-                          </p>
-                        </td>
+  key={booking.bookingId}
+  className="border-b hover:bg-gray-50 transition"
+>
+  {/* Booking ID */}
+  <td className="p-3">
+    <p className="font-bold text-primary">
+      #{booking.bookingId}
+    </p>
 
-                        <td className="p-3">
-                          <p className="font-semibold">
-                            {getUserName(booking)}
-                          </p>
-                          {getUserEmail(booking) && (
-                            <p className="text-xs text-gray-500 max-w-[180px] truncate">
-                              {getUserEmail(booking)}
-                            </p>
-                          )}
-                        </td>
+    <p className="text-xs text-gray-500">
+      Car ID: {booking.carId || "N/A"}
+    </p>
+  </td>
 
-                        <td className="p-3">
-                          <p className="font-semibold">
-                            {booking.carName || booking.car?.name || "N/A"}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {booking.brand || booking.car?.brand || "N/A"}
-                          </p>
-                        </td>
+  {/* Customer */}
+  <td className="p-3">
+  <p className="font-semibold">
+    {booking.userName || "N/A"}
+  </p>
 
-                        <td className="p-3">
-                          <p className="font-medium">
-                            {formatDate(booking.pickupDate)}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            to {formatDate(booking.dropoffDate)}
-                          </p>
-                          <p className="text-xs font-semibold mt-1">
-                            {booking.days || 0} day
-                            {Number(booking.days) === 1 ? "" : "s"}
-                          </p>
-                        </td>
+  {booking.userEmail && (
+    <p className="text-xs text-gray-500 max-w-[180px] truncate">
+      {booking.userEmail}
+    </p>
+  )}
+</td>
 
-                        <td className="p-3">
-                          <p className="font-medium">
-                            {booking.pickupLocation || "N/A"}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            to {booking.dropoffLocation || "N/A"}
-                          </p>
-                        </td>
+  {/* Car */}
+  <td className="p-3">
+    <p className="font-semibold">
+      {booking.name || "N/A"}
+    </p>
 
-                        <td className="p-3">
-                          <span className="text-xs font-semibold bg-gray-100 px-2 py-1 rounded-full">
-                            {String(booking.tripType || "N/A").replaceAll(
-                              "_",
-                              " ",
-                            )}
-                          </span>
-                        </td>
+    <p className="text-xs text-gray-500">
+      {booking.brand || "N/A"}
+    </p>
+  </td>
 
-                        <td className="p-3">
-                          <p className="font-bold text-secondary">
-                            {formatMoney(booking.total)}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {formatMoney(booking.price)} / day
-                          </p>
-                        </td>
+  {/* Travel Dates */}
+  <td className="p-3">
+    <p className="font-medium">
+      {formatDate(booking.pickupDate)}
+    </p>
 
-                        <td className="p-3">
-                          <select
-                            value={status}
-                            disabled={isUpdating}
-                            onChange={(event) =>
-                              handleTotalBookingStatus(
-                                booking.id,
-                                event.target.value,
-                              )
-                            }
-                            className={`border rounded-lg px-3 py-2 text-xs font-semibold outline-none disabled:opacity-50 ${getStatusClass(
-                              status,
-                            )}`}
-                          >
-                            {BOOKING_STATUS_OPTIONS.map((statusOption) => (
-                              <option key={statusOption} value={statusOption}>
-                                {statusOption}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
+    <p className="text-xs text-gray-500">
+      to {formatDate(booking.dropoffDate)}
+    </p>
 
-                        <td className="p-3">
-                          <div className="flex justify-center">
-                            <button
-                              type="button"
-                              disabled={isUpdating}
-                              onClick={() =>
-                                handleDeleteTotalBooking(booking.id)
-                              }
-                              className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white p-2.5 rounded-lg"
-                              title="Delete Booking"
-                            >
-                              <FiTrash2 />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
+    <p className="text-xs font-semibold mt-1">
+      {booking.days || 0} day
+      {Number(booking.days) === 1 ? "" : "s"}
+    </p>
+  </td>
+
+  {/* Route */}
+  <td className="p-3">
+    <p className="font-medium">
+      {booking.pickupLocation || "N/A"}
+    </p>
+
+    <p className="text-xs text-gray-500">
+      to {booking.dropoffLocation || "N/A"}
+    </p>
+  </td>
+
+  {/* Trip */}
+  <td className="p-3">
+    <span className="text-xs font-semibold bg-gray-100 px-2 py-1 rounded-full">
+      {String(
+        booking.tripDriverType || "N/A"
+      ).replaceAll("_", " ")}
+    </span>
+  </td>
+
+  {/* Amount */}
+  <td className="p-3">
+    <p className="font-bold text-secondary">
+      {formatMoney(booking.total)}
+    </p>
+
+    <p className="text-xs text-gray-500">
+      {formatMoney(booking.price)} / day
+    </p>
+  </td>
+
+  {/* Status */}
+  <td className="p-3">
+    <select
+      value={String(
+        booking.status || "PENDING"
+      ).toUpperCase()}
+      disabled={
+        Number(totalBookingActionId) ===
+        Number(booking.bookingId)
+      }
+      onChange={(event) =>
+        handleTotalBookingStatus(
+          booking.bookingId,
+          event.target.value
+        )
+      }
+      className={`border rounded-lg px-3 py-2 text-xs font-semibold outline-none disabled:opacity-50 ${getStatusClass(
+        String(
+          booking.status || "PENDING"
+        ).toUpperCase()
+      )}`}
+    >
+      {BOOKING_STATUS_OPTIONS.map((statusOption) => (
+        <option
+          key={statusOption}
+          value={statusOption}
+        >
+          {statusOption}
+        </option>
+      ))}
+    </select>
+  </td>
+
+  {/* Delete */}
+  <td className="p-3">
+    <div className="flex justify-center">
+      <button
+        type="button"
+        disabled={
+          Number(totalBookingActionId) ===
+          Number(booking.bookingId)
+        }
+        onClick={() =>
+          handleDeleteTotalBooking(
+            booking.bookingId
+          )
+        }
+        className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white p-2.5 rounded-lg"
+        title="Delete Booking"
+      >
+        <FiTrash2 />
+      </button>
+    </div>
+  </td>
+</tr>
                     );
                   })}
                 </tbody>
@@ -1957,7 +2117,7 @@ const Administrator = () => {
                           Booking #{booking.id}
                         </p>
                         <h3 className="font-bold text-primary break-words">
-                          {booking.carName || booking.car?.name || "N/A"}
+                          {booking.carName || booking.name || booking.car?.name || "N/A"}
                         </h3>
                         <p className="text-sm text-gray-500 break-words">
                           {getUserName(booking)}
@@ -2176,7 +2336,7 @@ const Administrator = () => {
                             #{booking.id}
                           </p>
                           <p className="text-xs text-gray-500">
-                            Car ID: {booking.car?.id || booking.carId || "N/A"}
+                            Car ID: {booking.adminCarsData?.id}
                           </p>
                         </td>
 
@@ -2193,10 +2353,10 @@ const Administrator = () => {
 
                         <td className="p-3">
                           <p className="font-semibold">
-                            {booking.carName || booking.car?.name || "N/A"}
+                            {booking.adminCarsData?.name}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {booking.brand || booking.car?.brand || "N/A"}
+                            {booking.adminCarsData?.brand}
                           </p>
                         </td>
 
@@ -2222,9 +2382,17 @@ const Administrator = () => {
                           </p>
                         </td>
 
-                        <td className="p-3">
+                        {/* <td className="p-3">
                           <span className="text-xs font-semibold bg-gray-100 px-2 py-1 rounded-full">
                             {String(booking.tripType || "N/A").replaceAll(
+                              "_",
+                              " ",
+                            )}
+                          </span>
+                        </td> */}
+                        <td className="p-3">
+                          <span className="text-xs font-semibold bg-gray-100 px-2 py-1 rounded-full">
+                            {String(booking.tripDriverType || "N/A").replaceAll(
                               "_",
                               " ",
                             )}
@@ -2435,7 +2603,7 @@ const Administrator = () => {
                             Trip Type
                           </p>
                           <p className="mt-1 break-words text-sm font-bold text-gray-900">
-                            {String(booking.tripType || "N/A").replaceAll(
+                            {String(booking.tripDriverType || "N/A").replaceAll(
                               "_",
                               " ",
                             )}
@@ -3375,18 +3543,31 @@ const Administrator = () => {
     });
   };
 
-  const getRevenueCustomerName = (booking) =>
-    booking.user?.fullName ||
-    booking.user?.name ||
-    [booking.user?.firstName, booking.user?.lastName]
-      .filter(Boolean)
-      .join(" ") ||
-    booking.userName ||
-    booking.name ||
-    "N/A";
+  // const getRevenueCustomerName = (booking) =>
+  //   booking.user?.fullName ||
+  //   booking.user?.name ||
+  //   [booking.user?.firstName, booking.user?.lastName]
+  //     .filter(Boolean)
+  //     .join(" ") ||
+  //   booking.userName ||
+  //   booking.name ||
+  //   "N/A";
 
-  const getRevenueCarName = (booking) =>
-    booking.carName || booking.car?.name || "N/A";
+  const getRevenueCustomerName = (booking) =>
+  booking.userName || "N/A";
+
+  // const getRevenueCarName = (booking) =>
+  //   booking.carName || booking.car?.name || "N/A";
+
+ const getRevenueCarName = (booking) => {
+  return (
+    booking.name ||
+    booking.carName ||
+    booking.car?.name ||
+    booking.adminCarsData?.name ||
+    "N/A"
+  );
+};
 
   const getRevenueReportPeriod = () => {
     if (revenueReportType === "DAILY") {
@@ -3549,11 +3730,11 @@ const Administrator = () => {
 
       const tableRows = filteredRevenueBookings.map((booking, index) => [
         index + 1,
-        `#${booking.id}`,
+        `#${booking.bookingId}`,
         formatRevenueDate(getBookingRevenueDate(booking)),
         getRevenueCustomerName(booking),
         getRevenueCarName(booking),
-        String(booking.tripType || "N/A").replaceAll("_", " "),
+        String(booking.tripDriverType || "N/A").replaceAll("_", " "),
         `${booking.pickupLocation || "N/A"} to ${
           booking.dropoffLocation || "N/A"
         }`,
@@ -3874,178 +4055,271 @@ const Administrator = () => {
       </div>
 
       <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-5 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h3 className="text-lg sm:text-xl font-bold text-primary">
-              Revenue Transactions
-            </h3>
-            <p className="text-sm text-gray-500">
-              Revenue is calculated in React from confirmed, active and
-              completed bookings
-            </p>
-          </div>
-          <span className="text-sm text-gray-500">
-            {filteredRevenueBookings.length} transaction
-            {filteredRevenueBookings.length === 1 ? "" : "s"}
-          </span>
-        </div>
+  <div className="p-4 sm:p-5 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <h3 className="text-lg sm:text-xl font-bold text-primary">
+        Revenue Transactions
+      </h3>
 
-        {totalBookingLoading ? (
-          <div className="p-12 text-center text-gray-500">
-            Loading revenue records...
-          </div>
-        ) : filteredRevenueBookings.length === 0 ? (
-          <div className="p-12 text-center">
-            <FiFileText className="text-5xl text-gray-300 mx-auto mb-3" />
-            <p className="font-semibold text-gray-600">
-              No revenue records found
-            </p>
-            <p className="text-sm text-gray-400 mt-1">
-              Select another date or report period.
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full min-w-[1050px]">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="p-3 text-left">Booking</th>
-                    <th className="p-3 text-left">Revenue Date</th>
-                    <th className="p-3 text-left">Customer</th>
-                    <th className="p-3 text-left">Vehicle</th>
-                    <th className="p-3 text-left">Route</th>
-                    <th className="p-3 text-left">Duration</th>
-                    <th className="p-3 text-left">Status</th>
-                    <th className="p-3 text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRevenueBookings.map((booking) => {
-                    const status = getBookingStatusValue(booking);
-                    return (
-                      <tr
-                        key={booking.id}
-                        className="border-b hover:bg-gray-50"
-                      >
-                        <td className="p-3 font-bold text-primary">
-                          #{booking.id}
-                        </td>
-                        <td className="p-3">
-                          {formatRevenueDate(getBookingRevenueDate(booking))}
-                        </td>
-                        <td className="p-3">
-                          <p className="font-semibold">
-                            {getRevenueCustomerName(booking)}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {booking.user?.email || booking.email || ""}
-                          </p>
-                        </td>
-                        <td className="p-3">
-                          <p className="font-semibold">
-                            {getRevenueCarName(booking)}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {booking.brand || booking.car?.brand || "N/A"}
-                          </p>
-                        </td>
-                        <td className="p-3">
-                          <p>{booking.pickupLocation || "N/A"}</p>
-                          <p className="text-xs text-gray-500">
-                            to {booking.dropoffLocation || "N/A"}
-                          </p>
-                        </td>
-                        <td className="p-3">
-                          {booking.days || 0} day
-                          {Number(booking.days) === 1 ? "" : "s"}
-                        </td>
-                        <td className="p-3">
-                          <span
-                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                              status === "COMPLETED"
-                                ? "bg-blue-100 text-blue-700"
-                                : status === "ACTIVE"
-                                  ? "bg-purple-100 text-purple-700"
-                                  : "bg-green-100 text-green-700"
-                            }`}
-                          >
-                            {status}
-                          </span>
-                        </td>
-                        <td className="p-3 text-right font-bold text-secondary">
-                          {formatRevenueMoney(booking.total)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot className="bg-red-50 border-t-2 border-red-200">
-                  <tr>
-                    <td
-                      colSpan="7"
-                      className="p-4 text-right font-bold text-primary"
-                    >
-                      Net Revenue
-                    </td>
-                    <td className="p-4 text-right text-lg font-bold text-secondary">
-                      {formatRevenueMoney(revenueSummary.revenue)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+      <p className="text-sm text-gray-500">
+        Revenue is calculated from confirmed, active and completed bookings
+      </p>
+    </div>
 
-            <div className="md:hidden p-3 bg-gray-50 space-y-3">
-              {filteredRevenueBookings.map((booking) => (
-                <article
-                  key={booking.id}
-                  className="bg-white border rounded-xl p-4 shadow-sm"
+    <span className="text-sm text-gray-500">
+      {filteredRevenueBookings.length} transaction
+      {filteredRevenueBookings.length === 1 ? "" : "s"}
+    </span>
+  </div>
+
+  {totalBookingLoading ? (
+    <div className="p-12 text-center text-gray-500">
+      Loading revenue records...
+    </div>
+  ) : filteredRevenueBookings.length === 0 ? (
+    <div className="p-12 text-center">
+      <FiFileText className="text-5xl text-gray-300 mx-auto mb-3" />
+
+      <p className="font-semibold text-gray-600">
+        No revenue records found
+      </p>
+
+      <p className="text-sm text-gray-400 mt-1">
+        Select another date or report period.
+      </p>
+    </div>
+  ) : (
+    <>
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full min-w-[1050px]">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-3 text-left">Booking</th>
+              <th className="p-3 text-left">Revenue Date</th>
+              <th className="p-3 text-left">Customer</th>
+              <th className="p-3 text-left">Vehicle</th>
+              <th className="p-3 text-left">Route</th>
+              <th className="p-3 text-left">Duration</th>
+              <th className="p-3 text-left">Status</th>
+              <th className="p-3 text-right">Amount</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredRevenueBookings.map((booking) => {
+              const status = String(
+                booking.status ||
+                  booking.bookingStatus ||
+                  "PENDING",
+              ).toUpperCase();
+
+              return (
+                <tr
+                  key={booking.bookingId}
+                  className="border-b hover:bg-gray-50"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs text-gray-500">
-                        Booking #{booking.id}
-                      </p>
-                      <h4 className="font-bold text-primary mt-1">
-                        {getRevenueCarName(booking)}
-                      </h4>
-                      <p className="text-sm text-gray-500">
-                        {getRevenueCustomerName(booking)}
-                      </p>
-                    </div>
-                    <p className="font-bold text-secondary">
-                      {formatRevenueMoney(booking.total)}
-                    </p>
-                  </div>
+                  <td className="p-3 font-bold text-primary">
+                    #{booking.bookingId}
+                  </td>
 
-                  <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Revenue Date</p>
-                      <p className="font-semibold mt-1">
-                        {formatRevenueDate(getBookingRevenueDate(booking))}
-                      </p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Status</p>
-                      <p className="font-semibold mt-1">
-                        {getBookingStatusValue(booking)}
-                      </p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3 col-span-2">
-                      <p className="text-xs text-gray-500">Route</p>
-                      <p className="font-semibold mt-1">
-                        {booking.pickupLocation || "N/A"} →{" "}
-                        {booking.dropoffLocation || "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </>
-        )}
+                  <td className="p-3">
+                    {formatRevenueDate(
+                      getBookingRevenueDate(booking),
+                    )}
+                  </td>
+
+                  <td className="p-3">
+  <p className="font-semibold">
+    {booking.userName || "N/A"}
+  </p>
+
+  {booking.userEmail && (
+    <p className="text-xs text-gray-500 max-w-[180px] truncate">
+      {booking.userEmail}
+    </p>
+  )}
+</td>
+
+                  <td className="p-3">
+                    <p className="font-semibold">
+                      {
+                        
+                        booking.car?.name || booking.name || "N/A"}
+                    </p>
+
+                    <p className="text-xs text-gray-500">
+                      {booking.brand ||
+                        booking.car?.brand ||
+                        "N/A"}
+                    </p>
+                  </td>
+
+                  <td className="p-3">
+                    <p>
+                      {booking.pickupLocation || "N/A"}
+                    </p>
+
+                    <p className="text-xs text-gray-500">
+                      to {booking.dropoffLocation || "N/A"}
+                    </p>
+                  </td>
+
+                  <td className="p-3">
+                    {booking.days || 0} day
+                    {Number(booking.days) === 1 ? "" : "s"}
+                  </td>
+
+                  <td className="p-3">
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                        status === "COMPLETED"
+                          ? "bg-blue-100 text-blue-700"
+                          : status === "ACTIVE"
+                            ? "bg-purple-100 text-purple-700"
+                            : status === "CANCELLED"
+                              ? "bg-gray-200 text-gray-700"
+                              : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {status}
+                    </span>
+                  </td>
+
+                  <td className="p-3 text-right font-bold text-secondary">
+                    {formatRevenueMoney(booking.total)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+
+          <tfoot className="bg-red-50 border-t-2 border-red-200">
+            <tr>
+              <td
+                colSpan={7}
+                className="p-4 text-right font-bold text-primary"
+              >
+                Net Revenue
+              </td>
+
+              <td className="p-4 text-right text-lg font-bold text-secondary">
+                {formatRevenueMoney(
+                  revenueSummary.revenue,
+                )}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
+
+      {/* Mobile cards */}
+      <div className="md:hidden p-3 bg-gray-50 space-y-3">
+        {filteredRevenueBookings.map((booking) => {
+          const status = String(
+            booking.status ||
+              booking.bookingStatus ||
+              "PENDING",
+          ).toUpperCase();
+
+          return (
+            <article
+              key={booking.bookingId}
+              className="bg-white border rounded-xl p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs text-gray-500">
+                    Booking #{booking.bookingId}
+                  </p>
+
+                  <h4 className="font-bold text-primary mt-1">
+                    {booking.name ||
+                      booking.carName ||
+                      booking.car?.name ||
+                      "N/A"}
+                  </h4>
+
+                  <p className="text-sm text-gray-500">
+                    {booking.userName || "N/A"}
+                  </p>
+
+                  {booking.userEmail && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      {booking.userEmail}
+                    </p>
+                  )}
+                </div>
+
+                <p className="font-bold text-secondary">
+                  {formatRevenueMoney(booking.total)}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">
+                    Revenue Date
+                  </p>
+
+                  <p className="font-semibold mt-1">
+                    {formatRevenueDate(
+                      getBookingRevenueDate(booking),
+                    )}
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">
+                    Status
+                  </p>
+
+                  <p className="font-semibold mt-1">
+                    {status}
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">
+                    Duration
+                  </p>
+
+                  <p className="font-semibold mt-1">
+                    {booking.days || 0} day
+                    {Number(booking.days) === 1
+                      ? ""
+                      : "s"}
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">
+                    Amount
+                  </p>
+
+                  <p className="font-semibold mt-1 text-secondary">
+                    {formatRevenueMoney(booking.total)}
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-3 col-span-2">
+                  <p className="text-xs text-gray-500">
+                    Route
+                  </p>
+
+                  <p className="font-semibold mt-1">
+                    {booking.pickupLocation || "N/A"} →{" "}
+                    {booking.dropoffLocation || "N/A"}
+                  </p>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </>
+  )}
+</div>
     </div>
   );
 

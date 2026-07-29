@@ -55,9 +55,67 @@ const Dashboard = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [bookingList, setBookingList] = useState([]);
+  // Cancel booking popup states
+  const [showCancelPopup, setShowCancelPopup] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [deletingBooking, setDeletingBooking] = useState(false);
+  const [cancelError, setCancelError] = useState("");
   const [licenseFile, setLicenseFile] = useState(null);
   const [aadhharFile, setAadhharFile] = useState(null);
   const [documentsData, setDocumentsData] = useState(null);
+
+  const openCancelBookingPopup = (booking) => {
+    setSelectedBooking(booking);
+    setCancelError("");
+    setShowCancelPopup(true);
+  };
+
+  const closeCancelBookingPopup = () => {
+    if (deletingBooking) return;
+
+    setShowCancelPopup(false);
+    setSelectedBooking(null);
+    setCancelError("");
+  };
+
+  const handleDeleteBooking = async () => {
+    if (!selectedBooking?.bookingId) {
+      setCancelError("Booking ID not found.");
+      return;
+    }
+
+    try {
+      setDeletingBooking(true);
+      setCancelError("");
+
+      const bookingId = selectedBooking.bookingId;
+
+      console.log("Deleting booking ID:", bookingId);
+
+      await cancelBooking(bookingId);
+
+      // Immediately remove deleted booking from user interface
+      setBookingList((previousBookings) =>
+        previousBookings.filter((booking) => booking.bookingId !== bookingId),
+      );
+
+      setShowCancelPopup(false);
+      setSelectedBooking(null);
+    } catch (error) {
+      console.error(
+        "Cancel booking failed:",
+        error.response?.data || error.message,
+      );
+
+      setCancelError(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to cancel booking. Please try again.",
+      );
+    } finally {
+      setDeletingBooking(false);
+    }
+  };
 
   const normalizedDocumentStatus = (() => {
     const rawStatus =
@@ -209,12 +267,57 @@ const Dashboard = () => {
     }
   };
 
+  // const fetchSavedCars = async () => {
+  //   try {
+  //     const data = await getAllCarts();
+  //     setSavedCarsData(data);
+  //   } catch (error) {
+  //     console.error("Error fetching saved cars :", error);
+  //   } finally {
+  //     setLoadingSavedCars(false);
+  //   }
+  // };
+
+  //   const fetchSavedCars = async () => {
+  //   try {
+  //     const data = await getAllCarts();
+
+  //     console.log("Saved cars in Dashboard:", data);
+
+  //     data.forEach((car) => {
+  //       console.log(
+  //         "cartId:",
+  //         car.cartId,
+  //         "carId:",
+  //         car.carId
+  //       );
+  //     });
+
+  //     setSavedCarsData(data);
+  //   } catch (error) {
+  //     console.error("Error fetching saved cars:", error);
+  //   } finally {
+  //     setLoadingSavedCars(false);
+  //   }
+  // };
   const fetchSavedCars = async () => {
     try {
       const data = await getAllCarts();
+
+      console.log("FINAL SAVED CARS:", data);
+
+      data.forEach((car, index) => {
+        console.log(`Saved car ${index}:`, {
+          cartId: car.cartId,
+          id: car.id,
+          carId: car.carId,
+          name: car.name,
+        });
+      });
+
       setSavedCarsData(data);
     } catch (error) {
-      console.error("Error fetching saved cars :", error);
+      console.error("Error fetching saved cars:", error);
     } finally {
       setLoadingSavedCars(false);
     }
@@ -495,7 +598,7 @@ const Dashboard = () => {
             </div>
           )}
 
-          {activeTab === "bookings" && !isAdmin && (
+          {/* {activeTab === "bookings" && !isAdmin && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-4">Upcoming Bookings</h2>
@@ -629,74 +732,289 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-          )}
+          )} */}
+          {activeTab === "bookings" && !isAdmin && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold mb-4">My Bookings</h2>
 
-          {activeTab === "saved" && !isAdmin && (
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Saved Cars</h2>
+                {bookingList.length > 0 ? (
+                  <div className="grid gap-6">
+                    {bookingList.map((booking) => {
+                      const imageUrl = booking.mainImage
+                        ? booking.mainImage.startsWith("http")
+                          ? booking.mainImage
+                          : `http://localhost:8080/car-images/${encodeURIComponent(
+                              booking.mainImage,
+                            )}`
+                        : "/placeholder-car.png";
 
-              {loadingSavedCars ? (
-                <div className="bg-white p-12 rounded-xl text-center">
-                  <p>Loading...</p>
-                </div>
-              ) : savedCarsData.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {savedCarsData.map((car, index) => (
-                    <motion.div
-                      key={`saved-car-${car.id}-${index}`}
-                      whileHover={{ y: -10 }}
-                      className="bg-white rounded-xl overflow-hidden card-shadow"
-                    >
-                      <div className="h-40 overflow-hidden">
-                        <img
-                          src={car.image}
-                          alt={car.name}
-                          className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                        />
-                      </div>
+                      const normalizedStatus = String(
+                        booking.status || "PENDING",
+                      ).toUpperCase();
 
-                      <div className="p-4">
-                        <h3 className="font-bold text-lg mb-2">{car.name}</h3>
+                      return (
+                        <motion.div
+                          key={booking.bookingId}
+                          whileHover={{ y: -5 }}
+                          className="bg-white rounded-xl card-shadow p-6"
+                        >
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div>
+                              <img
+                                src={imageUrl}
+                                alt={booking.name || "Booked car"}
+                                className="w-full h-40 rounded-lg object-cover"
+                                onError={(event) => {
+                                  event.currentTarget.src =
+                                    "/placeholder-car.png";
+                                }}
+                              />
+                            </div>
 
-                        <p className="text-gray-600 text-sm mb-2">
-                          {car.brand}
-                        </p>
+                            <div className="md:col-span-2">
+                              <h3 className="text-xl font-bold mb-2">
+                                {booking.name}
+                              </h3>
 
-                        <p className="text-gray-600 text-sm mb-2">
-                          Fuel : {car.fuelType}
-                        </p>
+                              <div className="space-y-2 text-gray-600">
+                                <p>
+                                  <span className="font-semibold">Brand:</span>{" "}
+                                  {booking.brand}
+                                </p>
 
-                        <p className="text-gray-600 text-sm mb-4">
-                          Seats : {car.seating}
-                        </p>
+                                <p>
+                                  <span className="font-semibold">Fuel:</span>{" "}
+                                  {booking.fuelType}
+                                </p>
 
-                        <div className="flex justify-between items-center">
-                          <p className="text-secondary font-bold">
-                            {formatCurrency(car.price)}/day
-                          </p>
+                                <p>
+                                  <span className="font-semibold">
+                                    Transmission:
+                                  </span>{" "}
+                                  {booking.transmition}
+                                </p>
 
-                          <Link
-                            to={`/car/${car.id}`}
-                            className="btn-primary text-sm py-2 px-4"
-                          >
-                            View
-                          </Link>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <div className="bg-white p-12 rounded-xl text-center">
-                  <p className="text-gray-600 mb-4">No saved cars yet</p>
+                                <p>
+                                  <span className="font-semibold">
+                                    Seating:
+                                  </span>{" "}
+                                  {booking.seating}
+                                </p>
 
-                  <Link to="/cars" className="btn-primary">
-                    Browse Cars
-                  </Link>
-                </div>
-              )}
+                                <p>
+                                  <span className="font-semibold">
+                                    Booking Status:
+                                  </span>{" "}
+                                  <span
+                                    className={
+                                      normalizedStatus === "CONFIRMED"
+                                        ? "text-green-600 font-bold"
+                                        : normalizedStatus === "PENDING"
+                                          ? "text-orange-500 font-bold"
+                                          : normalizedStatus === "CANCELLED"
+                                            ? "text-red-600 font-bold"
+                                            : "text-gray-600 font-bold"
+                                    }
+                                  >
+                                    {normalizedStatus}
+                                  </span>
+                                </p>
+
+                                {booking.createdAt && (
+                                  <p>
+                                    <span className="font-semibold">
+                                      Booked On:
+                                    </span>{" "}
+                                    {new Date(
+                                      booking.createdAt,
+                                    ).toLocaleString()}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col justify-between">
+                              <div>
+                                <p className="text-gray-600 text-sm">
+                                  Price Per Day
+                                </p>
+
+                                <p className="text-3xl font-bold text-secondary">
+                                  {formatCurrency(booking.price)}
+                                </p>
+                              </div>
+
+                              {/* {normalizedStatus !== "CANCELLED" && (
+                                // <button
+                                //   onClick={() =>
+                                //     cancelBooking(booking.bookingId)
+                                //   }
+                                //   className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold"
+                                // >
+                                //   Cancel Booking
+                                // </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openCancelBookingPopup(booking)
+                                  }
+                                  className="
+    w-full
+    bg-red-500
+    text-white
+    px-4
+    py-3
+    rounded-lg
+    hover:bg-red-600
+    active:bg-red-700
+    transition-colors
+    text-sm
+    font-semibold
+  "
+                                >
+                                  Cancel Booking
+                                </button>
+                              )} */}
+                              {normalizedStatus !== "CANCELLED" && (
+  <button
+    type="button"
+    onClick={() => openCancelBookingPopup(booking)}
+    className="
+      w-full
+      bg-red-500
+      text-white
+      px-4
+      py-3
+      rounded-lg
+      hover:bg-red-600
+      active:bg-red-700
+      transition-colors
+      text-sm
+      font-semibold
+    "
+  >
+    Cancel Booking
+  </button>
+)}
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="bg-white p-12 rounded-xl text-center">
+                    <p className="text-gray-600 mb-4">No bookings found</p>
+
+                    <Link to="/cars" className="btn-primary">
+                      Browse Cars
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           )}
+
+         
+          {activeTab === "saved" && !isAdmin && (
+  <div>
+    <h2 className="text-2xl font-bold mb-6">Saved Cars</h2>
+
+    {loadingSavedCars ? (
+      <div className="bg-white p-12 rounded-xl text-center">
+        <p>Loading...</p>
+      </div>
+    ) : savedCarsData.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {savedCarsData.map((car) => {
+          const imageName = car.mainImage || car.image;
+
+          const savedCarImageUrl = imageName
+            ? imageName.startsWith("http")
+              ? imageName
+              : imageName.startsWith("/car-images/")
+                ? `http://localhost:8080${imageName}`
+                : `http://localhost:8080/car-images/${encodeURIComponent(
+                    imageName,
+                  )}`
+            : "/placeholder-car.png";
+
+          return (
+            <motion.div
+              key={`saved-car-${car.cartId}`}
+              whileHover={{ y: -10 }}
+              className="bg-white rounded-xl overflow-hidden card-shadow"
+            >
+              <div className="h-40 overflow-hidden bg-gray-100">
+                <img
+                  src={savedCarImageUrl}
+                  alt={car.name || "Saved car"}
+                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = "/placeholder-car.png";
+                  }}
+                />
+              </div>
+
+              <div className="p-4">
+                <h3 className="font-bold text-lg mb-2">
+                  {car.name || "Car name not available"}
+                </h3>
+
+                <p className="text-gray-600 text-sm mb-2">
+                  {car.brand || "Brand not available"}
+                </p>
+
+                <p className="text-gray-600 text-sm mb-2">
+                  Fuel : {car.fuelType || "Not available"}
+                </p>
+
+                <p className="text-gray-600 text-sm mb-4">
+                  Seats : {car.seating || "Not available"}
+                </p>
+
+                <div className="flex justify-between items-center gap-4">
+                  <p className="text-secondary font-bold">
+                    {formatCurrency(car.price)}/day
+                  </p>
+
+                  <Link
+                    to={`/car/${car.cartId}`}
+                    className="btn-primary text-sm py-2 px-4"
+                    onClick={() => {
+                      console.log("View clicked:", {
+                        completeCar: car,
+                        cartId: car.cartId,
+                        carId: car.carId,
+                        mainImage: car.mainImage,
+                        image: car.image,
+                        finalImageUrl: savedCarImageUrl,
+                      });
+                    }}
+                  >
+                    View
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    ) : (
+      <div className="bg-white p-12 rounded-xl text-center">
+        <p className="text-gray-600 mb-4">
+          No saved cars yet
+        </p>
+
+        <Link to="/cars" className="btn-primary">
+          Browse Cars
+        </Link>
+      </div>
+    )}
+  </div>
+)}
 
           {activeTab === "profile" && (
             <div className="bg-white rounded-xl card-shadow p-8">
@@ -756,7 +1074,7 @@ const Dashboard = () => {
                         />
                       </div>
 
-                      <div>
+                      {/* <div>
                         <label className="block text-sm font-semibold mb-2">
                           Password
                         </label>
@@ -782,7 +1100,7 @@ const Dashboard = () => {
                             {showPassword ? <FiEyeOff /> : <FiEye />}
                           </button>
                         </div>
-                      </div>
+                      </div> */}
 
                       <div>
                         <label className="block text-sm font-semibold mb-2">
@@ -843,12 +1161,12 @@ const Dashboard = () => {
                         </p>
                       </div>
 
-                      <div>
+                      {/* <div>
                         <p className="text-gray-600 text-sm mb-1">Password</p>
                         <p className="text-lg font-semibold">
                           {profileData?.password}
                         </p>
-                      </div>
+                      </div> */}
 
                       <div>
                         <p className="text-gray-600 text-sm mb-1">Email</p>
@@ -994,7 +1312,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {previewImage && (
+      {/* {previewImage && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
           <button
             onClick={() => setPreviewImage(null)}
@@ -1009,67 +1327,128 @@ const Dashboard = () => {
             className="max-w-[95%] max-h-[95%] object-contain rounded-lg"
           />
         </div>
-      )}
-    </div>
-  );
+      )} */}
+      {previewImage && (
+  <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+    <button
+      onClick={() => setPreviewImage(null)}
+      className="absolute top-5 right-5 text-white text-4xl hover:text-red-500"
+    >
+      <FiX />
+    </button>
+
+    <img
+      src={previewImage}
+      alt="Full Preview"
+      className="max-w-[95%] max-h-[95%] object-contain rounded-lg"
+    />
+  </div>
+)}
+
+{/* ADD CANCEL BOOKING POPUP HERE */}
+{showCancelPopup && selectedBooking && (
+  <div
+    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    onClick={closeCancelBookingPopup}
+  >
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      onClick={(event) => event.stopPropagation()}
+      className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
+    >
+      <div className="border-b border-gray-200 px-5 py-4 sm:px-6">
+        <div className="flex items-center justify-between gap-4">
+          <h3 className="text-lg font-bold text-gray-900 sm:text-xl">
+            Cancel Booking
+          </h3>
+
+          <button
+            type="button"
+            onClick={closeCancelBookingPopup}
+            disabled={deletingBooking}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-800 disabled:opacity-50"
+          >
+            <FiX className="text-xl" />
+          </button>
+        </div>
+      </div>
+
+      <div className="px-5 py-6 text-center sm:px-6">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+          <FiX className="text-3xl text-red-600" />
+        </div>
+
+        <h4 className="mb-2 text-xl font-bold text-gray-900">
+          Delete this booking?
+        </h4>
+
+        <p className="text-sm leading-6 text-gray-600 sm:text-base">
+          Are you sure you want to delete your booking for{" "}
+          <span className="font-bold text-gray-900">
+            {selectedBooking.name || "this car"}
+          </span>
+          ?
+        </p>
+
+        <div className="mt-4 rounded-lg bg-gray-50 p-3 text-left">
+          <p className="text-sm text-gray-600">
+            <span className="font-semibold text-gray-800">Brand:</span>{" "}
+            {selectedBooking.brand || "Not available"}
+          </p>
+
+          <p className="mt-1 text-sm text-gray-600">
+            <span className="font-semibold text-gray-800">
+              Booking ID:
+            </span>{" "}
+            {selectedBooking.bookingId}
+          </p>
+        </div>
+
+        {cancelError && (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {cancelError}
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col-reverse gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+        <button
+          type="button"
+          onClick={closeCancelBookingPopup}
+          disabled={deletingBooking}
+          className="w-full rounded-lg border border-gray-300 bg-white px-5 py-3 font-semibold text-gray-700 hover:bg-gray-100 disabled:opacity-50 sm:w-auto"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          onClick={handleDeleteBooking}
+          disabled={deletingBooking}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700 disabled:bg-red-400 sm:w-auto"
+        >
+          {deletingBooking ? (
+            <>
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Deleting...
+            </>
+          ) : (
+            "Cancel Booking"
+          )}
+        </button>
+      </div>
+    </motion.div>
+  </div>
+)}
+
+</div>
+);
+    
 };
 
-// const DocumentPreview = ({ title, fileUrl, setPreviewImage }) => {
-//   const isPdf = fileUrl?.toLowerCase().endsWith(".pdf");
-//   const isImage = /\.(jpg|jpeg|png|webp)$/i.test(fileUrl || "");
 
-//   return (
-//     <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
-//       <div className="px-4 py-3 border-b">
-//         <h3 className="font-bold text-lg">{title}</h3>
-//       </div>
-
-//       <div className="p-4 h-96 flex items-center justify-center">
-//         {!fileUrl ? (
-//           <p className="text-gray-500">{title} not found</p>
-//         ) : isImage ? (
-//           <div className="relative group w-full h-full">
-//             <img
-//               src={fileUrl}
-//               alt={title}
-//               className="w-full h-full object-contain rounded-lg"
-//             />
-
-//             <div
-//               onClick={() => setPreviewImage(fileUrl)}
-//               className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center cursor-pointer rounded-lg"
-//             >
-//               <FiEye className="text-white text-5xl" />
-//             </div>
-//           </div>
-//         ) : isPdf ? (
-//           <div className="text-center">
-//             <FiFileText className="text-6xl text-red-500 mx-auto mb-4" />
-//             <p className="font-semibold mb-4">PDF Document</p>
-
-//             <a
-//               href={fileUrl}
-//               target="_blank"
-//               rel="noreferrer"
-//               className="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold"
-//             >
-//               Open PDF
-//             </a>
-//           </div>
-//         ) : (
-//           <a
-//             href={fileUrl}
-//             target="_blank"
-//             rel="noreferrer"
-//             className="text-blue-600 underline font-semibold"
-//           >
-//             View Document
-//           </a>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
 const DocumentPreview = ({ title, fileUrl, status, setPreviewImage }) => {
   const isPdf = fileUrl?.toLowerCase().endsWith(".pdf");
   const isImage = /\.(jpg|jpeg|png|webp)$/i.test(fileUrl || "");

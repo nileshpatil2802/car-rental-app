@@ -15,14 +15,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.My_Car_Rental_Application.dto.ApiResponse;
+import com.My_Car_Rental_Application.dto.ForgotPasswordRequest;
+import com.My_Car_Rental_Application.dto.ResetPasswordRequest;
 import com.My_Car_Rental_Application.dto.UserLoginDto;
 import com.My_Car_Rental_Application.dto.UserRequestDto;
 import com.My_Car_Rental_Application.dto.UserResponseDto;
 import com.My_Car_Rental_Application.entity.AdminCarsData;
 import com.My_Car_Rental_Application.service.HomeService;
+import com.My_Car_Rental_Application.service.PasswordResetService;
+
+import jakarta.validation.Valid;
 
 
 @CrossOrigin(origins = "http://localhost:5173")
@@ -32,11 +39,13 @@ public class HomeController {
 	
 	private HomeService homeService;
 	private AuthenticationManager authenticationManager;
+	private final PasswordResetService passwordResetService;
 
 	// constructor injection
-	public HomeController(HomeService userService,AuthenticationManager authenticationManager) {
+	public HomeController(HomeService userService,AuthenticationManager authenticationManager,PasswordResetService passwordResetService) {
 		this.homeService=userService;
 		this.authenticationManager=authenticationManager;
+		this.passwordResetService=passwordResetService;
 		
 	}
 	
@@ -213,6 +222,57 @@ public class HomeController {
 	public AdminCarsData findCarById(@PathVariable int id) {
 		return homeService.findCarById(id);
 	}
+	
+	@PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse> forgotPassword(
+            @Valid
+            @RequestBody
+            ForgotPasswordRequest request
+    ) {
+
+        passwordResetService
+                .createForgotPasswordRequest(
+                        request.getEmail()
+                );
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "If an account exists with this email, password reset instructions have been sent."
+                )
+        );
+    }
+
+    @GetMapping("/validate-reset-token")
+    public ResponseEntity<Map<String, Boolean>>
+    validateResetToken(
+            @RequestParam String token
+    ) {
+
+        boolean valid =
+                passwordResetService
+                        .validateToken(token);
+
+        return ResponseEntity.ok(
+                Map.of("valid", valid)
+        );
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse> resetPassword(
+            @Valid
+            @RequestBody
+            ResetPasswordRequest request
+    ) {
+
+        passwordResetService
+                .resetPassword(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Password changed successfully. You can now log in with your new password."
+                )
+        );
+    }
 	
 
 

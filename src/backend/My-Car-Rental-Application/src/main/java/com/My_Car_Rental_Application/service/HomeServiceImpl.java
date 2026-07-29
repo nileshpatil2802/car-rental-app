@@ -3,6 +3,7 @@ package com.My_Car_Rental_Application.service;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,21 +22,35 @@ public class HomeServiceImpl implements HomeService{
 	
 	private CarsDataRepository cd;
 	
-	public HomeServiceImpl(HomeRepository userRepository,CarsDataRepository cd) {
+	private final PasswordEncoder passwordEncoder;
+	
+	public HomeServiceImpl(HomeRepository userRepository,CarsDataRepository cd,PasswordEncoder passwordEncoder) {
 		this.homeRepository=userRepository;
 		this.cd=cd;
+		this.passwordEncoder=passwordEncoder;
 	}
 	
 	@Override
 	public String doRegister(UserRequestDto request) {
+		
+		  if (homeRepository.existsByEmailIgnoreCase(request.getEmail())) {
+	            throw new IllegalArgumentException(
+	                    "Email address is already registered"
+	            );
+	        }
+		
+		
 		UserRequest userRequest=new UserRequest();
 		userRequest.setFirstName(request.getFirstName());
 		userRequest.setLastName(request.getLastName());
-		userRequest.setEmail(request.getEmail());
+		userRequest.setEmail(request.getEmail().trim().toLowerCase());
 		userRequest.setPhone(request.getPhone());
-		userRequest.setPassword(request.getPassword());
+		userRequest.setPassword(passwordEncoder.encode(request.getPassword()));
 		userRequest.setAvatar(request.getAvatar());
-		userRequest.setRole("USER");
+		if(userRequest.getRole()==null  || userRequest.getRole().isBlank()) {
+			userRequest.setRole("USER");
+		}
+	
 		
 		
 		

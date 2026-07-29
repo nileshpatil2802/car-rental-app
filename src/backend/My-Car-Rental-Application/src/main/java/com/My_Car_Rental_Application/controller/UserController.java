@@ -25,8 +25,11 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.My_Car_Rental_Application.dto.AddToCartDto;
 import com.My_Car_Rental_Application.dto.BookingDto;
+import com.My_Car_Rental_Application.dto.BookingResponseDto;
 import com.My_Car_Rental_Application.dto.CarsDataRequestDto;
+import com.My_Car_Rental_Application.dto.CartResponseDto;
 import com.My_Car_Rental_Application.entity.Booking;
 import com.My_Car_Rental_Application.entity.Cart;
 import com.My_Car_Rental_Application.entity.UserDocuments;
@@ -45,29 +48,29 @@ public class UserController {
 	
 	public UserController(UserService userService,UserDocumentRepository userDocumentRepository) {
 		this.userService=userService;
-		this.userDocumentRepository=userDocumentRepository;
+		this.userDocumentRepository=userDocumentRepository;  
 	}
 	
 
 	@PostMapping("/cart")
-	public List<Cart> addCart(@RequestBody CarsDataRequestDto acd){
-		System.out.println("Received User Id = " + acd.getUserId());
-		List<Cart> cart = userService.addCart(acd);
+	public List<CartResponseDto> addCart(@RequestBody AddToCartDto dto){
+		System.out.println("Received User Id = " + dto.getUserId());
+		List<CartResponseDto> cart = userService.addCart(dto);
 		System.out.println("I am in cart");
 		System.out.println("cart : "+cart);
 		return cart;
 	}
 	
 	@GetMapping("/getCarts/{userId}")
-	public List<Cart> getCarts(@PathVariable int userId){
+	public List<CartResponseDto> getCarts(@PathVariable int userId){
 	 System.out.println("Get carts : "+userId);
-	 List<Cart> allCarts = userService.getAllCarts(userId);
+	 List<CartResponseDto> allCarts = userService.getAllCarts(userId);
 	 	System.out.println("allCarts : "+allCarts);
 	    return allCarts;
 	}
 	
 	@GetMapping("/getCarts/{id}/{userId}")
-	public  Cart getCart(@PathVariable int id,@PathVariable int userId) {
+	public  CartResponseDto getCart(@PathVariable int id,@PathVariable int userId) {
 		return userService.getCartById(id,userId);
 	}
 	
@@ -79,7 +82,7 @@ public class UserController {
 	@GetMapping("/getUserByEmail/{email}")
 	public UserRequest getUserByEmail(@PathVariable String email) {
 		UserRequest userByEmail = userService.getUserByEmail(email);
-		System.out.println("userByEmail : "+userByEmail);
+		System.out.println("userByEmail : "+userByEmail.getPassword());
 		return userByEmail;
 	}
 	
@@ -96,13 +99,13 @@ public class UserController {
 	}
 	
 	@PostMapping("/booking")
-	public List<Booking> booking(@RequestBody BookingDto booking){
+	public List<BookingResponseDto> booking(@RequestBody BookingDto booking){
 		
 		return userService.booking(booking);
 	}
 	
 	@GetMapping("/bookingList/{id}")
-	public List<Booking> BookingList(@PathVariable int id){
+	public List<BookingResponseDto> BookingList(@PathVariable int id){
 		return userService.getBookingList(id);
 	}
 	

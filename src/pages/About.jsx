@@ -1,34 +1,75 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { FiCheck, FiAward, FiUsers, FiTrendingUp } from 'react-icons/fi';
-import HeroBanner from '../components/HeroBanner';
+import React from "react";
+import { motion } from "framer-motion";
+import { FiCheck, FiAward, FiUsers, FiTrendingUp } from "react-icons/fi";
+import HeroBanner from "../components/HeroBanner";
+// import member1 from "../assets/team/member1.jpg";
+import member2 from "../assets/team/Manoj.jpg";
+import member3 from "../assets/team/Dinu.webp";
+// import member4 from "../assets/team/member4.jpg";
 
 const About = () => {
   const stats = [
-    { icon: FiUsers, label: 'Happy Customers', value: '50K+' },
-    { icon: FiTrendingUp, label: 'Bookings', value: '100K+' },
-    { icon: FiAward, label: 'Years Experience', value: '15+' },
-    { icon: FiCheck, label: 'Fleet Size', value: '500+' },
+    { icon: FiUsers, label: "Happy Customers", value: "50K+" },
+    { icon: FiTrendingUp, label: "Bookings", value: "100K+" },
+    { icon: FiAward, label: "Years Experience", value: "15+" },
+    { icon: FiCheck, label: "Fleet Size", value: "500+" },
+  ];
+
+  const teamMembers = [
+    // {
+    //   id: 1,
+    //   image: member1,
+    //   name: "Nilesh Patil",
+    //   position: "Founder & CEO",
+    //   description:
+    //     "Leading SelfDrive Junction with a vision to provide the best self-drive car rental experience.",
+    // },
+    {
+      id: 2,
+      image: member2,
+      name: "Manojkumar Patil",
+      position: "Operations Manager",
+      description:
+        "Manages vehicle operations and ensures customers receive quality service every time.",
+    },
+    {
+      id: 3,
+      image: member3,
+      name: "Dinesh Koli",
+      position: "Customer Support",
+      description:
+        "Provides quick assistance and helps customers throughout their booking journey.",
+    },
+    // {
+    //   id: 4,
+    //   image: member4,
+    //   name: "Amit Verma",
+    //   position: "Fleet Manager",
+    //   description:
+    //     "Maintains the vehicle fleet to ensure every car is clean, safe, and road-ready.",
+    // },
   ];
 
   const values = [
     {
-      title: 'Excellence',
-      description: 'We strive for excellence in every aspect of our service',
+      title: "Excellence",
+      description: "We strive for excellence in every aspect of our service",
     },
     {
-      title: 'Reliability',
-      description: 'Our customers can count on us for dependable service',
+      title: "Reliability",
+      description: "Our customers can count on us for dependable service",
     },
     {
-      title: 'Innovation',
-      description: 'We continuously innovate to improve customer experience',
+      title: "Innovation",
+      description: "We continuously innovate to improve customer experience",
     },
     {
-      title: 'Integrity',
-      description: 'We operate with transparency and honesty',
+      title: "Integrity",
+      description: "We operate with transparency and honesty",
     },
   ];
+
+  
 
   return (
     <div className="min-h-screen">
@@ -52,17 +93,20 @@ const About = () => {
             >
               <h2 className="section-title">Our Story</h2>
               <p className="text-gray-600 mb-4">
-                Founded in 2026, SelfDrive Junction has been a leader in premium car rental services.
-                What started as a small venture has grown into a trusted name in the industry.
+                Founded in 2026, SelfDrive Junction has been a leader in premium
+                car rental services. What started as a small venture has grown
+                into a trusted name in the industry.
               </p>
               <p className="text-gray-600 mb-4">
-                We believe that every journey deserves to be special. Our commitment to providing
-                luxury vehicles and exceptional service has made us the preferred choice for
-                discerning travelers worldwide.
+                We believe that every journey deserves to be special. Our
+                commitment to providing luxury vehicles and exceptional service
+                has made us the preferred choice for discerning travelers
+                worldwide.
               </p>
               <p className="text-gray-600">
-                Today, we operate a fleet of over 500 premium vehicles across multiple locations,
-                serving thousands of satisfied customers every year.
+                Today, we operate a fleet of over 500 premium vehicles across
+                multiple locations, serving thousands of satisfied customers
+                every year.
               </p>
             </motion.div>
             <motion.div
@@ -130,7 +174,7 @@ const About = () => {
       </section>
 
       {/* Team Section */}
-      <section className="py-16">
+      {/* <section className="py-16">
         <div className="container-custom">
           <h2 className="section-title text-center mb-12">Our Team</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -156,14 +200,54 @@ const About = () => {
             ))}
           </div>
         </div>
+      </section> */}
+      {/* Team Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container-custom">
+          <h2 className="section-title text-center mb-12">Meet Our Team</h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {teamMembers.map((member) => (
+              <motion.div
+                key={member.id}
+                whileHover={{ y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl"
+              >
+                <img
+                  src={member.image}
+                  alt={member.name}
+                  className="w-full h-72 object-cover"
+                />
+
+                <div className="p-6 text-center">
+                  <h3 className="text-xl font-bold text-gray-800">
+                    {member.name}
+                  </h3>
+
+                  <p className="text-red-600 font-semibold mt-1">
+                    {member.position}
+                  </p>
+
+                  <p className="text-gray-600 text-sm mt-3 leading-6">
+                    {member.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-primary to-secondary py-16 text-white">
         <div className="container-custom text-center">
-          <h2 className="text-4xl font-bold mb-4">Ready to Experience Luxury?</h2>
+          <h2 className="text-4xl font-bold mb-4">
+            Ready to Experience Luxury?
+          </h2>
           <p className="text-lg mb-8 text-gray-200">
-            Join thousands of satisfied customers and book your premium car today
+            Join thousands of satisfied customers and book your premium car
+            today
           </p>
           <a href="/cars" className="inline-block btn-primary">
             Browse Our Fleet

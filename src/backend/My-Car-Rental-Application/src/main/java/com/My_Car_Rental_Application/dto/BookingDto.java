@@ -4,173 +4,162 @@ import java.time.LocalDate;
 
 public class BookingDto {
 
-    private int userId;
+    private Integer userId;
 
-    private int carId;
-
-    private String carName;
-    private String brand;
-    private String mainImage;
-
-    private double price;
-
+    private Integer carId;
+    
+    private Integer days;
+    
     private LocalDate pickupDate;
+
     private LocalDate dropoffDate;
 
-    private String pickupLocation;
-    private String dropoffLocation;
-
-    private String tripType;
-
-    private int days;
-    private double total;
-
     private String bookingStatus;
+    
+    private String pickupLocation;
+    
+    private String dropoffLocation;
+    
+    private String tripDriverType;
+    
+    private Double total;
+    
+    private Double price; 
+    
 
-    public BookingDto() {
-    }
+	public BookingDto() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
-    public BookingDto(
-            int userId,
-            int carId,
-            String carName,
-            String brand,
-            String mainImage,
-            double price,
-            LocalDate pickupDate,
-            LocalDate dropoffDate,
-            String pickupLocation,
-            String dropoffLocation,
-            String tripType,
-            int days,
-            double total,
-            String bookingStatus) {
 
-        this.userId = userId;
-        this.carId = carId;
-        this.carName = carName;
-        this.brand = brand;
-        this.mainImage = mainImage;
-        this.price = price;
-        this.pickupDate = pickupDate;
-        this.dropoffDate = dropoffDate;
-        this.pickupLocation = pickupLocation;
-        this.dropoffLocation = dropoffLocation;
-        this.tripType = tripType;
-        this.days = days;
-        this.total = total;
-        this.bookingStatus = bookingStatus;
-    }
+	public BookingDto(Integer userId, Integer carId, Integer days, LocalDate pickupDate, LocalDate dropoffDate,
+			String bookingStatus, String pickupLocation, String dropoffLocation, String tripDriverType, Double total,
+			Double price) {
+		super();
+		this.userId = userId;
+		this.carId = carId;
+		this.days = days;
+		this.pickupDate = pickupDate;
+		this.dropoffDate = dropoffDate;
+		this.bookingStatus = bookingStatus;
+		this.pickupLocation = pickupLocation;
+		this.dropoffLocation = dropoffLocation;
+		this.tripDriverType = tripDriverType;
+		this.total = total;
+		this.price = price;
+	}
 
-    public int getUserId() {
-        return userId;
-    }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
+	public Integer getUserId() {
+		return userId;
+	}
 
-    public int getCarId() {
-        return carId;
-    }
 
-    public void setCarId(int carId) {
-        this.carId = carId;
-    }
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
 
-    public String getCarName() {
-        return carName;
-    }
 
-    public void setCarName(String carName) {
-        this.carName = carName;
-    }
+	public Integer getCarId() {
+		return carId;
+	}
 
-    public String getBrand() {
-        return brand;
-    }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
+	public void setCarId(Integer carId) {
+		this.carId = carId;
+	}
 
-    public String getMainImage() {
-        return mainImage;
-    }
 
-    public void setMainImage(String mainImage) {
-        this.mainImage = mainImage;
-    }
+	public Integer getDays() {
+		return days;
+	}
 
-    public double getPrice() {
-        return price;
-    }
 
-    public void setPrice(double price) {
-        this.price = price;
-    }
+	public void setDays(Integer days) {
+		this.days = days;
+	}
 
-    public LocalDate getPickupDate() {
-        return pickupDate;
-    }
 
-    public void setPickupDate(LocalDate pickupDate) {
-        this.pickupDate = pickupDate;
-    }
+	public LocalDate getPickupDate() {
+		return pickupDate;
+	}
 
-    public LocalDate getDropoffDate() {
-        return dropoffDate;
-    }
 
-    public void setDropoffDate(LocalDate dropoffDate) {
-        this.dropoffDate = dropoffDate;
-    }
+	public void setPickupDate(LocalDate pickupDate) {
+		this.pickupDate = pickupDate;
+	}
 
-    public String getPickupLocation() {
-        return pickupLocation;
-    }
 
-    public void setPickupLocation(String pickupLocation) {
-        this.pickupLocation = pickupLocation;
-    }
+	public LocalDate getDropoffDate() {
+		return dropoffDate;
+	}
 
-    public String getDropoffLocation() {
-        return dropoffLocation;
-    }
 
-    public void setDropoffLocation(String dropoffLocation) {
-        this.dropoffLocation = dropoffLocation;
-    }
+	public void setDropoffDate(LocalDate dropoffDate) {
+		this.dropoffDate = dropoffDate;
+	}
 
-    public String getTripType() {
-        return tripType;
-    }
 
-    public void setTripType(String tripType) {
-        this.tripType = tripType;
-    }
+	public String getBookingStatus() {
+		return bookingStatus;
+	}
 
-    public int getDays() {
-        return days;
-    }
 
-    public void setDays(int days) {
-        this.days = days;
-    }
+	public void setBookingStatus(String bookingStatus) {
+		this.bookingStatus = bookingStatus;
+	}
 
-    public double getTotal() {
-        return total;
-    }
 
-    public void setTotal(double total) {
-        this.total = total;
-    }
+	public String getPickupLocation() {
+		return pickupLocation;
+	}
 
-    public String getBookingStatus() {
-        return bookingStatus;
-    }
 
-    public void setBookingStatus(String bookingStatus) {
-        this.bookingStatus = bookingStatus;
-    }
+	public void setPickupLocation(String pickupLocation) {
+		this.pickupLocation = pickupLocation;
+	}
+
+
+	public String getDropoffLocation() {
+		return dropoffLocation;
+	}
+
+
+	public void setDropoffLocation(String dropoffLocation) {
+		this.dropoffLocation = dropoffLocation;
+	}
+
+
+	public String getTripDriverType() {
+		return tripDriverType;
+	}
+
+
+	public void setTripDriverType(String tripDriverType) {
+		this.tripDriverType = tripDriverType;
+	}
+
+
+	public Double getTotal() {
+		return total;
+	}
+
+
+	public void setTotal(Double total) {
+		this.total = total;
+	}
+
+
+	public Double getPrice() {
+		return price;
+	}
+
+
+	public void setPrice(Double price) {
+		this.price = price;
+	}
+
+	
+	
 }

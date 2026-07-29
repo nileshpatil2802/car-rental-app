@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.My_Car_Rental_Application.dto.BookingResponseDto;
 import com.My_Car_Rental_Application.dto.CarsDataRequestDto;
 import com.My_Car_Rental_Application.entity.AdminCarsData;
 import com.My_Car_Rental_Application.entity.Booking;
@@ -252,7 +253,7 @@ public class AdminServiceImpl implements AdminService {
 	}
 
 	@Override
-	public List<Booking> BookingRecords() {
+	public List<BookingResponseDto> BookingRecords() {
 
 		List<Booking> byBookingStatusIn = bookingRepository.findByBookingStatusIn(List.of(
 
@@ -260,10 +261,105 @@ public class AdminServiceImpl implements AdminService {
 		System.out.println("Size = " + byBookingStatusIn.size());
 		logger.info("Info of size : " + byBookingStatusIn.size());
 
-		return byBookingStatusIn;
+		return byBookingStatusIn.stream().map(this::convertToDto).toList();
 
 	}
+	
+//	public BookingResponseDto convertToDto(Booking booking) {
+//		BookingResponseDto dto=new BookingResponseDto();
+//		dto.setBookingId(booking.getId());
+//		dto.setBrand(booking.getAdminCarsData().getBrand());
+//		dto.setCarId(booking.getAdminCarsData().getId());
+//		dto.setCreatedAt(booking.getCreatedAt());
+//		dto.setDescription(booking.getAdminCarsData().getDescription());
+//		dto.setFeatures(booking.getAdminCarsData().getFeatures());
+//		dto.setFuelType(booking.getAdminCarsData().getFuelType());
+//		dto.setMainImage(booking.getAdminCarsData().getMainImage());
+//		dto.setImg1(booking.getAdminCarsData().getImg1());
+//		dto.setImg2(booking.getAdminCarsData().getImg2());
+//		dto.setImg3(booking.getAdminCarsData().getImg3());
+//		dto.setName(booking.getAdminCarsData().getName());
+//		dto.setPrice(booking.getAdminCarsData().getPrice());
+//		dto.setSeating(booking.getAdminCarsData().getSeating());
+//		dto.setStatus(booking.getBookingStatus());
+//		dto.setTransmition(booking.getAdminCarsData().getTransmition());
+//		dto.setUserId(booking.getUser().getId());
+//		
+//		return dto;
+//	}
 
+	private BookingResponseDto convertToDto(Booking booking) {
+
+	    BookingResponseDto dto = new BookingResponseDto();
+
+	    // Booking details
+	    dto.setBookingId(booking.getId());
+	    dto.setCreatedAt(booking.getCreatedAt());
+	    dto.setStatus(booking.getBookingStatus());
+
+	    dto.setPickupDate(booking.getPickupDate());
+	    dto.setDropoffDate(booking.getDropoffDate());
+
+	    dto.setPickupLocation(booking.getPickupLocation());
+	    dto.setDropoffLocation(booking.getDropoffLocation());
+
+	    dto.setTripDriverType(booking.getTripDriverType());
+
+	    dto.setDays(booking.getDays());
+	    dto.setTotal(booking.getTotal());
+	    dto.setPrice(booking.getPrice());
+	    dto.setName(booking.getUser().getFirstName());
+	    dto.setUserEmail(booking.getUser().getEmail());
+
+	    // User details
+	    if (booking.getUser() != null) {
+	        //dto.setUserId(booking.getUser().getId());
+	    	UserRequest user=booking.getUser();
+	    	System.out.println("I am in convert to Dto print user object :"+user);
+	    	dto.setUserId(user.getId());
+	    	dto.setFirstName(booking.getUser().getFirstName());
+	    	dto.setLastName(booking.getUser().getLastName());
+	    	dto.setUserEmail(user.getEmail());
+	    	
+	    	String firstName = booking.getUser().getFirstName() == null
+	    	        ? ""
+	    	        : booking.getUser().getFirstName();
+	    	System.out.println("First Name :"+firstName);
+
+	    	String lastName = booking.getUser().getLastName() == null
+	    	        ? ""
+	    	        : booking.getUser().getLastName();
+	    	System.out.println("Last Name :"+lastName);
+
+	    	dto.setUserName((firstName + " " + lastName).trim());
+	    }
+
+	    // Car details
+	    if (booking.getAdminCarsData() != null) {
+
+	        AdminCarsData car = booking.getAdminCarsData();
+
+	        dto.setBrand(car.getBrand());
+	        dto.setCarId(car.getId());
+	        dto.setDescription(car.getDescription());
+	        dto.setFeatures(car.getFeatures());
+	        dto.setFuelType(car.getFuelType());
+
+	        dto.setMainImage(car.getMainImage());
+	        dto.setImg1(car.getImg1());
+	        dto.setImg2(car.getImg2());
+	        dto.setImg3(car.getImg3());
+
+	       dto.setName(car.getName());
+	        dto.setSeating(car.getSeating());
+	        dto.setTransmition(car.getTransmition());
+	        
+	        
+	    }
+
+	    return dto;
+	}
+	
 	@Override
 	public void deleteBooking(int bookingId) {
 

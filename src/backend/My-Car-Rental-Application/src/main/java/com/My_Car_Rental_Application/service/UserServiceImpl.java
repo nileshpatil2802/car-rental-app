@@ -6,15 +6,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-
+import java.time.temporal.ChronoUnit;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.My_Car_Rental_Application.dto.AddToCartDto;
 import com.My_Car_Rental_Application.dto.BookingDto;
-import com.My_Car_Rental_Application.dto.CarsDataRequestDto;
+import com.My_Car_Rental_Application.dto.BookingResponseDto;
+import com.My_Car_Rental_Application.dto.CartResponseDto;
 import com.My_Car_Rental_Application.entity.AdminCarsData;
 import com.My_Car_Rental_Application.entity.Booking;
 import com.My_Car_Rental_Application.entity.Cart;
@@ -39,57 +40,80 @@ public class UserServiceImpl implements UserService{
 	
 	private UserDocumentRepository userDocumentRepository;
 	
-	public UserServiceImpl(CartRepository cartRepository,CarsDataRepository carsDataRepository,HomeRepository homeRepository,BookingRepository bookingRepository,UserDocumentRepository userDocumentRepository) {
+	private final PasswordEncoder passwordEncoder;
+	
+	public UserServiceImpl(CartRepository cartRepository,CarsDataRepository carsDataRepository,HomeRepository homeRepository,BookingRepository bookingRepository,UserDocumentRepository userDocumentRepository,PasswordEncoder passwordEncoder) {
 		this.cartRepository=cartRepository;
 		this.homeRepository=homeRepository;
 		this.bookingRepository=bookingRepository;
 		this.userDocumentRepository=userDocumentRepository;
 		this.carsDataRepository=carsDataRepository;
+		this.passwordEncoder=passwordEncoder;
 	}
 
 	@Override
-	public List<Cart> addCart(CarsDataRequestDto acd) {
+	public List<CartResponseDto> addCart(AddToCartDto dto) {
 		
 
-			UserRequest user = homeRepository.findById(acd.getUserId()).orElseThrow();
+		 UserRequest user = homeRepository
+		            .findById(dto.getUserId())
+		            .orElseThrow(() ->
+		                    new RuntimeException("User not found"));
+		 
+		 AdminCarsData car = carsDataRepository
+		            .findById(dto.getCarId())
+		            .orElseThrow(() ->
+		                    new RuntimeException("Car not found"));
+		 
+		 boolean alreadyExists =
+		            cartRepository.existsByUser_IdAndCar_Id(
+		                    user.getId(),
+		                    car.getId());
+		 
+		 if (alreadyExists) {
+		        throw new RuntimeException("Car already added in cart.");
+		    }
 		
-			Cart ad=new Cart();
-			ad.setName(acd.getName());
-			ad.setCarId(acd.getCarId());
-			ad.setDescription(acd.getDescription());
-			ad.setFeatures(acd.getFeatures());
-			ad.setFuelType(acd.getFuelType());
-			ad.setImg1(acd.getImg1());
-			ad.setImg2(acd.getImg2());
-			ad.setImg3(acd.getImg3());
-			ad.setMainImage(acd.getMainImage());
-			ad.setPrice(acd.getPrice());
-			ad.setSeating(acd.getSeating());
-			ad.setStatus(acd.isStatus());
-			ad.setTransmition(acd.getTransmition());
-			ad.setBrand(acd.getBrand());
+			Cart cart=new Cart();
+			cart.setUser(user);
+		    cart.setCar(car);
+
 			
-			ad.setFeatures(acd.getFeatures());
-			ad.setUser(user);
 			
-			System.out.println("User Id cheque in user service : "+acd.getUserId());
 			
-			cartRepository.save(ad);
+			cartRepository.save(cart);
+			 System.out.println("User ID : " + user.getId());
+			 System.out.println("Car ID  : " + car.getId());
 			 
 			
 		//}
-		return cartRepository.findByUser_Id(acd.getUserId());
+			 return cartRepository
+		                .findByUser_Id(user.getId())
+		                .stream()
+		                .map(this::convertToCartResponseDto)
+		                .toList();
 	}
 
 	@Override
-	public List<Cart> getAllCarts(int userId) {
-		//return cartRepository.findAll();     findByUser_Id
-		return cartRepository.findByUser_Id(userId); 
+	public List<CartResponseDto> getAllCarts(int userId) {
+		return cartRepository
+        .findByUser_Id(userId)
+        .stream()
+        .map(this::convertToCartResponseDto)
+        .toList();
 	}
 
 	@Override
-	public Cart getCartById(int id,int userId) {
-		return cartRepository.findByIdAndUserId(id,userId);
+	public CartResponseDto getCartById(int id,int userId) {
+		
+		Cart cart = cartRepository.findByIdAndUserId(id,userId);
+		
+		if (cart == null) {
+	        throw new RuntimeException("Cart not found");
+	    }
+		
+		return convertToCartResponseDto(cart); 
+		
 	}
 
 	@Override
@@ -114,7 +138,7 @@ public class UserServiceImpl implements UserService{
 		user.setEmail(email);
 		user.setAvatar(userRequest.getAvatar());
 		user.setLastName(userRequest.getLastName());
-		user.setPassword(userRequest.getPassword());
+		user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
 		user.setPhone(userRequest.getPhone());
 		user.setRole("USER");
 		
@@ -162,8 +186,14 @@ public class UserServiceImpl implements UserService{
 //}
 	
 	@Override
-	public List<Booking> booking(BookingDto booking) {
+	public List<BookingResponseDto> booking(BookingDto booking) {
+		
+//		UserDocuments documentsByUserId = userDocumentRepository.findByUser_Id(booking.getUserId());
+//		System.out.println("I am in booking service document fetch using userId :"+documentsByUserId);
+//		System.out.println("I am in booking service print user Id here :"+booking.getUserId());
 
+		
+		
 	    // 1. Check user
 	    UserRequest user = homeRepository.findById(booking.getUserId())
 	            .orElseThrow(() ->
@@ -210,6 +240,22 @@ public class UserServiceImpl implements UserService{
 	                "Drop-off date must be after pickup date"
 	        );
 	    }
+	    
+	    long calculatedDays = ChronoUnit.DAYS.between(
+	            booking.getPickupDate(),
+	            booking.getDropoffDate()
+	    );
+	    
+	    if (calculatedDays <= 0) {
+	        throw new RuntimeException(
+	                "Drop-off date must be after pickup date"
+	        );
+	    }
+	    
+	    double pricePerDay = car.getPrice();
+
+	    double totalAmount =
+	            pricePerDay * calculatedDays;
 
 	    // 7. Check whether same car already has overlapping booking
 	    long overlappingBookings =
@@ -224,41 +270,133 @@ public class UserServiceImpl implements UserService{
 	                "This car is already booked or waiting for approval for the selected dates"
 	        );
 	    }
-
+	    
+	   
 	    // 8. Create booking entity
 	    Booking book = new Booking();
 
 	    book.setUser(user);
-
-	    
-
-	    book.setCarName(booking.getCarName());
-	    book.setBrand(booking.getBrand());
-	    book.setMainImage(booking.getMainImage());
-	    book.setPrice(booking.getPrice());
+	    book.setAdminCarsData(car);
 
 	    book.setPickupDate(booking.getPickupDate());
 	    book.setDropoffDate(booking.getDropoffDate());
 
+	    book.setDays((int) calculatedDays);
+
+	    book.setPrice(pricePerDay);
+	    book.setTotal(totalAmount);
+
+	    book.setBookingStatus("PENDING");
+
 	    book.setPickupLocation(booking.getPickupLocation());
 	    book.setDropoffLocation(booking.getDropoffLocation());
-        book.setCar(car);
-	    book.setTripType(booking.getTripType());
 
-	    book.setDays(booking.getDays());
-	    book.setTotal(booking.getTotal());
-
-	    /*
-	     * Never accept booking status from frontend.
-	     * Every new booking starts as PENDING.
-	     */
-	    book.setBookingStatus("PENDING");
+	    book.setTripDriverType(booking.getTripDriverType());
 
 	    // 9. Save booking
 	    bookingRepository.save(book);
 
 	    // 10. Return user's updated booking list
-	    return bookingRepository.findByUser_Id(user.getId());
+	    return bookingRepository.findByUser_Id(user.getId()).stream().map(this::convertToDto).toList();
+	}
+	
+//	public BookingResponseDto convertToDto(Booking booking) {
+//		BookingResponseDto dto=new BookingResponseDto();
+//		dto.setBookingId(booking.getId());
+//		dto.setBrand(booking.getAdminCarsData().getBrand());
+//		dto.setCarId(booking.getAdminCarsData().getId());
+//		dto.setCreatedAt(booking.getCreatedAt());
+//		dto.setDescription(booking.getAdminCarsData().getDescription());
+//		dto.setFeatures(booking.getAdminCarsData().getFeatures());
+//		dto.setFuelType(booking.getAdminCarsData().getFuelType());
+//		dto.setMainImage(booking.getAdminCarsData().getMainImage());
+//		dto.setImg1(booking.getAdminCarsData().getImg1());
+//		dto.setImg2(booking.getAdminCarsData().getImg2());
+//		dto.setImg3(booking.getAdminCarsData().getImg3());
+//		dto.setName(booking.getAdminCarsData().getName());
+//		dto.setPrice(booking.getAdminCarsData().getPrice());
+//		dto.setSeating(booking.getAdminCarsData().getSeating());
+//		dto.setStatus(booking.getBookingStatus());
+//		dto.setTransmition(booking.getAdminCarsData().getTransmition());
+//		dto.setUserId(booking.getUser().getId());
+//		
+//		
+//		return dto;
+//	}
+	public BookingResponseDto convertToDto(Booking booking) {
+
+	    BookingResponseDto dto = new BookingResponseDto();
+
+	    dto.setBookingId(booking.getId());
+	    dto.setCreatedAt(booking.getCreatedAt());
+	    dto.setStatus(booking.getBookingStatus());
+	    
+//	    private int days;
+
+	    //private String bookingStatus;
+	    
+//	    private String pickupLocation;
+//	    
+//	    private String dropoffLocation;
+	    
+//	    private String tripDriverType;
+	    
+//	    private Double total;
+	    
+	   // private Double price; 
+
+	    // Booking information
+	    dto.setPickupDate(booking.getPickupDate());
+	    dto.setDropoffDate(booking.getDropoffDate());
+	    dto.setPickupLocation(booking.getPickupLocation());
+	    dto.setDropoffLocation(booking.getDropoffLocation());
+
+	    // Use the getter that actually exists in your Booking entity
+	    dto.setTripDriverType(booking.getTripDriverType());
+
+	    dto.setDays(booking.getDays());
+
+	    dto.setTotal(
+	            booking.getTotal() != null
+	                    ? booking.getTotal()
+	                    : 0.0
+	    );
+
+	    // User information
+	    if (booking.getUser() != null) {
+	        dto.setUserId(booking.getUser().getId());
+	    }
+
+	    // Car information
+	    if (booking.getAdminCarsData() != null) {
+
+	        AdminCarsData car = booking.getAdminCarsData();
+
+	        dto.setCarId(car.getId());
+	        dto.setBrand(car.getBrand());
+	        dto.setDescription(car.getDescription());
+	        dto.setFeatures(car.getFeatures());
+	        dto.setFuelType(car.getFuelType());
+
+	        dto.setMainImage(car.getMainImage());
+	        dto.setImg1(car.getImg1());
+	        dto.setImg2(car.getImg2());
+	        dto.setImg3(car.getImg3());
+
+	        dto.setName(car.getName());
+
+	        // Booking price saved at booking time
+	        dto.setPrice(
+	                booking.getPrice() != null
+	                        ? booking.getPrice()
+	                        : car.getPrice()
+	        );
+
+	        dto.setSeating(car.getSeating());
+	        dto.setTransmition(car.getTransmition());
+	    }
+
+	    return dto;
 	}
 
 	@Override
@@ -267,9 +405,9 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
-	public List<Booking> getBookingList(int id) {
+	public List<BookingResponseDto> getBookingList(int id) {
 		// TODO Auto-generated method stub
-		return bookingRepository.findByUser_Id(id);
+		return bookingRepository.findByUser_Id(id).stream().map(this::convertToDto).toList();
 	}
 
 //	@Override
@@ -505,6 +643,65 @@ public class UserServiceImpl implements UserService{
 		return userDocumentRepository.findAll();
 	}
 
+	
+//	private CartResponseDto convertToDto(Cart cart) {
+//
+//	    CartResponseDto dto = new CartResponseDto();
+//
+//	    dto.setCartId(cart.getId());
+//
+//	    dto.setCarId(cart.getCar().getId());
+//
+//	    dto.setName(cart.getCar().getName());
+//
+//	    dto.setBrand(cart.getCar().getBrand());
+//
+//	    dto.setPrice(cart.getCar().getPrice());
+//
+//	    dto.setMainImage(cart.getCar().getMainImage());
+//
+//	    dto.setFuelType(cart.getCar().getFuelType());
+//
+//	    dto.setSeating(cart.getCar().getSeating());
+//
+//	    dto.setTransmition(cart.getCar().getTransmition());
+//
+//	    return dto;
+//	}
+	
+	private CartResponseDto convertToCartResponseDto(Cart cart) {
+
+	    CartResponseDto dto = new CartResponseDto();
+
+	    dto.setCartId(cart.getId());
+	    dto.setUserId(cart.getUser().getId());
+
+	    AdminCarsData car = cart.getCar();
+
+	    dto.setCarId(car.getId());
+
+	    dto.setMainImage(car.getMainImage());
+	    dto.setImg1(car.getImg1());
+	    dto.setImg2(car.getImg2());
+	    dto.setImg3(car.getImg3());
+
+	    dto.setStatus(car.isStatus());
+
+	    dto.setFuelType(car.getFuelType());
+	    dto.setName(car.getName());
+	    dto.setSeating(car.getSeating());
+	    dto.setTransmition(car.getTransmition());
+	    dto.setPrice(car.getPrice());
+
+	    dto.setFeatures(car.getFeatures());
+
+	    dto.setDescription(car.getDescription());
+	    dto.setBrand(car.getBrand());
+
+	    dto.setCreatedAt(cart.getCreatedAt());
+
+	    return dto;
+	}
  
 
 	

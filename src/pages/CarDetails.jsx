@@ -82,11 +82,23 @@ const CarDetails = () => {
         setImages(imgArray);
 
         // CHECK ALREADY SAVED
+        // const savedCars = await getAllCarts();
+
+        // const exists = savedCars.some((item) => item.id === data.id);
+
+        // setAlreadySaved(exists);
         const savedCars = await getAllCarts();
 
-        const exists = savedCars.some((item) => item.id === data.id);
+const currentCarId = Number(data.carId || data.id);
 
-        setAlreadySaved(exists);
+const savedCar = savedCars.find(
+  (item) => Number(item.carId) === currentCarId,
+);
+
+console.log("Current car ID:", currentCarId);
+console.log("Matching saved car:", savedCar);
+
+setAlreadySaved(Boolean(savedCar));
       } catch (error) {
         console.error("Fetch Error :", error);
       } finally {
@@ -97,57 +109,150 @@ const CarDetails = () => {
     fetchCar();
   }, [id]);
 
+  // const handleSave = async () => {
+  //   if (!user) {
+  //     navigate("/login");
+  //     return;
+  //   }
+
+  //   try {
+  //     if (alreadySaved) {
+  //       const savedCars = await getAllCarts();
+
+  //       console.log("Saved Cars :", savedCars);
+
+  //       const savedCar = savedCars.find((item) => item.id === car.id);
+
+  //       if (savedCar) {
+  //         await deleteCartById(savedCar.id);
+
+  //         setAlreadySaved(false);
+
+  //         toggleSaveCar(car.id);
+
+  //         setToast({
+  //           message: "Car Removed From Cart",
+  //           type: "danger",
+  //         });
+  //       }
+
+  //       return;
+  //     }
+
+  //     await saveCarToCart(car);
+
+  //     setAlreadySaved(true);
+
+  //     toggleSaveCar(car.id);
+
+  //     setToast({
+  //       message: "Car Saved Successfully",
+  //       type: "success",
+  //     });
+  //   } catch (error) {
+  //     console.error("Save Error :", error);
+
+  //     setToast({
+  //       message: "Operation Failed",
+  //       type: "error",
+  //     });
+  //   }
+  // };
+
+  // BOOKING
   const handleSave = async () => {
-    if (!user) {
-      navigate("/login");
+  if (!user) {
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const userId = localStorage.getItem("userId");
+    const currentCarId = Number(car.carId || car.id);
+
+    if (!userId) {
+      setToast({
+        message: "User ID not found. Please login again.",
+        type: "error",
+      });
       return;
     }
 
-    try {
-      if (alreadySaved) {
-        const savedCars = await getAllCarts();
+    if (!currentCarId) {
+      setToast({
+        message: "Car ID not found.",
+        type: "error",
+      });
+      return;
+    }
 
-        console.log("Saved Cars :", savedCars);
+    // REMOVE CAR FROM CART
+    if (alreadySaved) {
+      const savedCars = await getAllCarts();
 
-        const savedCar = savedCars.find((item) => item.id === car.id);
+      const savedCar = savedCars.find(
+        (item) => Number(item.carId) === currentCarId,
+      );
 
-        if (savedCar) {
-          await deleteCartById(savedCar.id);
+      console.log("Removing saved cart record:", savedCar);
 
-          setAlreadySaved(false);
-
-          toggleSaveCar(car.id);
-
-          setToast({
-            message: "Car Removed From Cart",
-            type: "danger",
-          });
-        }
-
+      if (!savedCar?.cartId) {
+        setToast({
+          message: "Cart record not found.",
+          type: "error",
+        });
         return;
       }
 
-      await saveCarToCart(car);
+      await deleteCartById(savedCar.cartId);
 
-      setAlreadySaved(true);
+      setAlreadySaved(false);
 
-      toggleSaveCar(car.id);
-
-      setToast({
-        message: "Car Saved Successfully",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Save Error :", error);
+      toggleSaveCar(currentCarId);
 
       setToast({
-        message: "Operation Failed",
-        type: "error",
+        message: "Car Removed From Cart",
+        type: "danger",
       });
+
+      return;
     }
-  };
 
-  // BOOKING
+    // SAVE CAR TO CART
+    const payload = {
+      userId: Number(userId),
+      carId: currentCarId,
+    };
+
+    console.log("Saving car payload:", payload);
+
+    await saveCarToCart(payload);
+
+    // This immediately changes button text
+    setAlreadySaved(true);
+
+    toggleSaveCar(currentCarId);
+
+    setToast({
+      message: "Car Saved Successfully",
+      type: "success",
+    });
+  } catch (error) {
+    console.error(
+      "Save Error:",
+      error.response?.data || error.message,
+    );
+
+    setToast({
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Operation Failed",
+      type: "error",
+    });
+  }
+};
+
   const handleBooking = () => {
     if (!user) {
       navigate("/login");
@@ -422,7 +527,7 @@ const CarDetails = () => {
 >
   {alreadySaved ? 'Saved' : 'Save Car'}
 </button> */}
-              <button
+              {/* <button
                 onClick={handleSave}
                 className={`w-full mt-3 p-3 rounded font-semibold transition-all ${
                   alreadySaved
@@ -430,8 +535,19 @@ const CarDetails = () => {
                     : "border hover:bg-gray-100"
                 }`}
               >
-                {alreadySaved ? "Saved" : "Save Car"}
-              </button>
+                {alreadySaved ? "Remove from Cart" : "Save Car"}
+              </button> */}
+              <button
+  type="button"
+  onClick={handleSave}
+  className={`w-full mt-3 p-3 rounded font-semibold transition-all ${
+    alreadySaved
+      ? "bg-red-500 text-white hover:bg-red-600"
+      : "border border-gray-300 bg-white hover:bg-gray-100"
+  }`}
+>
+  {alreadySaved ? "Remove from Cart" : "Save Car"}
+</button>
 
               {/* DESCRIPTION */}
               <p className="mt-6 text-gray-700">{car.description}</p>

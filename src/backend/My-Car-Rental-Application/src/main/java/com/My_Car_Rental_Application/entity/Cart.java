@@ -1,216 +1,48 @@
 package com.My_Car_Rental_Application.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
+@Table(name = "cart", uniqueConstraints = {
+		@UniqueConstraint(name = "uk_cart_user_car", columnNames = { "user_id", "car_id" }) })
 public class Cart {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-	@Column(name = "car_id", nullable = false)
-	private Long carId;
-	@Column(length = 30000)
-	private String mainImage;
-	@Column(length = 30000)
-	private String img1;
-	@Column(length = 30000)
-	private String img2;
-	@Column(length = 30000)
-	private String img3;
-	private boolean status;
-	private String fuelType;   
-	private String name;
-	private int seating;
-	private String transmition;			// mode : automatic.....
-	private double price;
-	@Embedded	
-	private Features features;
-	@Lob
-	private String description;
-	
-	private String brand;
-	private double rating;
-	private int reviews;
-	
-	@ManyToOne
-	@JoinColumn(name="user_id")
-	@JsonIgnore
+	private Integer id;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
 	private UserRequest user;
-	
-	public Cart() {
-		super();
-		// TODO Auto-generated constructor stub
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "car_id", nullable = false)
+	private AdminCarsData car;
+
+	private LocalDateTime createdAt;
+
+	@PrePersist
+	public void prePersist() {
+		createdAt = LocalDateTime.now();
 	}
 
-	public Cart(int id, Long carId, String mainImage, String img1, String img2, String img3, boolean status,
-			String fuelType, String name, int seating, String transmition, double price, Features features,
-			String description, String brand, double rating, int reviews, UserRequest user) {
-		super();
-		this.id = id;
-		this.carId = carId;
-		this.mainImage = mainImage;
-		this.img1 = img1;
-		this.img2 = img2;
-		this.img3 = img3;
-		this.status = status;
-		this.fuelType = fuelType;
-		this.name = name;
-		this.seating = seating;
-		this.transmition = transmition;
-		this.price = price;
-		this.features = features;
-		this.description = description;
-		this.brand = brand;
-		this.rating = rating;
-		this.reviews = reviews;
-		this.user = user;
-	}
-
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
-	}
-
-	public Long getCarId() {
-		return carId;
-	}
-
-	public void setCarId(Long carId) {
-		this.carId = carId;
-	}
-
-	public String getMainImage() {
-		return mainImage;
-	}
-
-	public void setMainImage(String mainImage) {
-		this.mainImage = mainImage;
-	}
-
-	public String getImg1() {
-		return img1;
-	}
-
-	public void setImg1(String img1) {
-		this.img1 = img1;
-	}
-
-	public String getImg2() {
-		return img2;
-	}
-
-	public void setImg2(String img2) {
-		this.img2 = img2;
-	}
-
-	public String getImg3() {
-		return img3;
-	}
-
-	public void setImg3(String img3) {
-		this.img3 = img3;
-	}
-
-	public boolean isStatus() {
-		return status;
-	}
-
-	public void setStatus(boolean status) {
-		this.status = status;
-	}
-
-	public String getFuelType() {
-		return fuelType;
-	}
-
-	public void setFuelType(String fuelType) {
-		this.fuelType = fuelType;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public int getSeating() {
-		return seating;
-	}
-
-	public void setSeating(int seating) {
-		this.seating = seating;
-	}
-
-	public String getTransmition() {
-		return transmition;
-	}
-
-	public void setTransmition(String transmition) {
-		this.transmition = transmition;
-	}
-
-	public double getPrice() {
-		return price;
-	}
-
-	public void setPrice(double price) {
-		this.price = price;
-	}
-
-	public Features getFeatures() {
-		return features;
-	}
-
-	public void setFeatures(Features features) {
-		this.features = features;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public String getBrand() {
-		return brand;
-	}
-
-	public void setBrand(String brand) {
-		this.brand = brand;
-	}
-
-	public double getRating() {
-		return rating;
-	}
-
-	public void setRating(double rating) {
-		this.rating = rating;
-	}
-
-	public int getReviews() {
-		return reviews;
-	}
-
-	public void setReviews(int reviews) {
-		this.reviews = reviews;
 	}
 
 	public UserRequest getUser() {
@@ -221,7 +53,19 @@ public class Cart {
 		this.user = user;
 	}
 
-	
+	public AdminCarsData getCar() {
+		return car;
+	}
 
-	
+	public void setCar(AdminCarsData car) {
+		this.car = car;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
 }

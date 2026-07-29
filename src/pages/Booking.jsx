@@ -21,6 +21,8 @@ const Booking = () => {
 
   const car = location.state?.car;
 
+  
+
   const [toast, setToast] = useState(null);
   const [step, setStep] = useState(1);
   const [profileData, setProfileData] = useState(null);
@@ -58,6 +60,20 @@ const Booking = () => {
   const validateAadhaar = (aadhaar) => {
     return /^\d{12}$/.test(aadhaar);
   };
+
+  const handleBooking = async () => {
+  try {
+    const response = await carBooking(bookingData);
+
+    console.log("Booking successful:", response);
+
+    alert("Car booked successfully");
+  } catch (error) {
+    console.error("Booking failed:", error);
+
+    alert(error.message);
+  }
+};
 
   const validateDrivingLicense = (license) => {
     return /^[A-Z]{2}\d{2}\s?\d{11}$/.test(license);
@@ -121,34 +137,37 @@ const Booking = () => {
   const total = subtotal + insurance + tax;
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
 
-    let finalValue = value;
+  console.log("Changed field:", name);
+  console.log("Changed value:", value);
 
-    if (name === "aadhaarNumber") {
-      finalValue = value.replace(/\D/g, "").slice(0, 12);
-    }
+  let finalValue = value;
 
-    if (name === "phone") {
-      finalValue = value.replace(/\D/g, "").slice(0, 10);
-    }
+  if (name === "aadhaarNumber") {
+    finalValue = value.replace(/\D/g, "").slice(0, 12);
+  }
 
-    if (name === "licenseNumber") {
-      finalValue = value.toUpperCase().slice(0, 16);
-    }
+  if (name === "phone") {
+    finalValue = value.replace(/\D/g, "").slice(0, 10);
+  }
 
-    setFormData((prev) => ({
+  if (name === "licenseNumber") {
+    finalValue = value.toUpperCase().slice(0, 16);
+  }
+
+  setFormData((prev) => ({
+    ...prev,
+    [name]: finalValue,
+  }));
+
+  if (errors[name]) {
+    setErrors((prev) => ({
       ...prev,
-      [name]: finalValue,
+      [name]: "",
     }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
+  }
+};
 
   const validateStep1 = () => {
     const newErrors = {};
@@ -291,79 +310,402 @@ const Booking = () => {
   //     });
   //   }
   // };
-  const handleConfirmBooking = async () => {
-    if (formData.tripType === "SELF_DRIVE" && !validateStep2()) {
-      setStep(2);
-      return;
-    }
+  // const handleConfirmBooking = async () => {
+  //   if (formData.tripType === "SELF_DRIVE" && !validateStep2()) {
+  //     setStep(2);
+  //     return;
+  //   }
 
-    if (!car?.id) {
-      setToast({
-        message: "Car ID is missing. Please select the car again.",
-        type: "error",
-      });
-      return;
-    }
+  //   if (!car?.id) {
+  //     setToast({
+  //       message: "Car ID is missing. Please select the car again.",
+  //       type: "error",
+  //     });
+  //     return;
+  //   }
 
-    const booking = {
-      carId: car.id,
+  //   const booking = {
+  //     carId: car.id,
 
-      carName: car.name,
-      brand: car.brand,
-      mainImage: car.mainImage || car.image,
-      price: Number(car.price),
+  //     carName: car.name,
+  //     brand: car.brand,
+  //     mainImage: car.mainImage || car.image,
+  //     price: Number(car.price),
 
-      pickupDate: formData.pickupDate,
-      dropoffDate: formData.dropoffDate,
+  //     pickupDate: formData.pickupDate,
+  //     dropoffDate: formData.dropoffDate,
 
-      pickupLocation: formData.pickupLocation,
-      dropoffLocation: formData.dropoffLocation,
+  //     pickupLocation: formData.pickupLocation,
+  //     dropoffLocation: formData.dropoffLocation,
 
-      tripType: formData.tripType,
+  //     tripType: formData.tripType,
 
-      days: Number(days),
-      total: Math.round(total),
+  //     days: Number(days),
+  //     total: Math.round(total),
 
-      bookingStatus: "PENDING",
-    };
+  //     bookingStatus: "PENDING",
+  //   };
 
-    try {
-      const response = await carBooking(booking);
+  //   try {
+  //     const response = await carBooking(booking);
 
-      /*
-       * Your backend currently returns the updated booking list.
-       * Therefore, do not directly add the local booking as CONFIRMED.
-       */
-      if (Array.isArray(response)) {
-        const latestBooking = response[response.length - 1];
+  //     /*
+  //      * Your backend currently returns the updated booking list.
+  //      * Therefore, do not directly add the local booking as CONFIRMED.
+  //      */
+  //     if (Array.isArray(response)) {
+  //       const latestBooking = response[response.length - 1];
 
-        if (latestBooking) {
-          addBooking(latestBooking);
-        }
-      } else if (response) {
-        addBooking(response);
+  //       if (latestBooking) {
+  //         addBooking(latestBooking);
+  //       }
+  //     } else if (response) {
+  //       addBooking(response);
+  //     }
+
+  //     setToast({
+  //       message: "Booking request sent to admin successfully!",
+  //       type: "success",
+  //     });
+
+  //     setTimeout(() => {
+  //       navigate("/dashboard");
+  //     }, 2000);
+  //   } catch (error) {
+  //     console.error("Booking Error:", error.response?.data || error.message);
+
+  //     const errorMessage =
+  //       error.response?.data?.message || error.message || "Booking failed!";
+
+  //     setToast({
+  //       message: errorMessage,
+  //       type: "error",
+  //     });
+  //   }
+  // };
+//   const handleConfirmBooking = async () => {
+//   if (
+//     formData.tripType === "SELF_DRIVE" &&
+//     !validateStep2()
+//   ) {
+//     setStep(2);
+//     return;
+//   }
+
+//   const actualCarId = car?.carId ?? car?.id;
+
+//   console.log("Complete car object:", car);
+//   console.log("Cart ID:", car?.cartId);
+//   console.log("Actual car ID:", actualCarId);
+
+//   if (!actualCarId) {
+//     setToast({
+//       message:
+//         "Car ID is missing. Please select the car again.",
+//       type: "error",
+//     });
+
+//     return;
+//   }
+
+//   const booking = {
+//     // AdminCarsData ID
+//     carId: Number(actualCarId),
+
+//     carName: car.name,
+//     brand: car.brand,
+//     mainImage: car.mainImage || car.image,
+//     price: Number(car.price),
+
+//     pickupDate: formData.pickupDate,
+//     dropoffDate: formData.dropoffDate,
+
+//     pickupLocation: formData.pickupLocation,
+//     dropoffLocation: formData.dropoffLocation,
+
+//     tripType: formData.tripType,
+
+//     days: Number(days),
+//     total: Math.round(total),
+
+//     bookingStatus: "PENDING",
+//   };
+
+//   console.log("Booking object before API:", booking);
+
+//   try {
+//     const response = await carBooking(booking);
+
+//     if (Array.isArray(response)) {
+//       const latestBooking =
+//         response[response.length - 1];
+
+//       if (latestBooking) {
+//         addBooking(latestBooking);
+//       }
+//     } else if (response) {
+//       addBooking(response);
+//     }
+
+//     setToast({
+//       message:
+//         "Booking request sent to admin successfully!",
+//       type: "success",
+//     });
+
+//     setTimeout(() => {
+//       navigate("/dashboard");
+//     }, 2000);
+//   } catch (error) {
+//     console.error(
+//       "Booking Error:",
+//       error.response?.data || error.message
+//     );
+
+//     const errorMessage =
+//       error.response?.data?.message ||
+//       error.message ||
+//       "Booking failed!";
+
+//     setToast({
+//       message: errorMessage,
+//       type: "error",
+//     });
+//   }
+// };
+// const handleConfirmBooking = async () => {
+//   if (
+//     formData.tripType === "SELF_DRIVE" &&
+//     !validateStep2()
+//   ) {
+//     setStep(2);
+//     return;
+//   }
+
+//   const actualCarId = car?.carId ?? car?.id;
+
+//   console.log("Complete car object:", car);
+//   console.log("Cart ID:", car?.cartId);
+//   console.log("Actual Car ID:", actualCarId);
+
+//   if (!actualCarId) {
+//     setToast({
+//       message:
+//         "Car ID is missing. Please select the car again.",
+//       type: "error",
+//     });
+//     return;
+//   }
+
+//   if (!formData.pickupDate) {
+//     setToast({
+//       message: "Pickup date is required.",
+//       type: "error",
+//     });
+//     setStep(1);
+//     return;
+//   }
+
+//   if (!formData.dropoffDate) {
+//     setToast({
+//       message: "Drop-off date is required.",
+//       type: "error",
+//     });
+//     setStep(1);
+//     return;
+//   }
+
+//   const booking = {
+//     carId: Number(actualCarId),
+//     pickupDate: formData.pickupDate,
+//     dropoffDate: formData.dropoffDate,
+//   };
+
+//   console.log("Booking object before API:", booking);
+
+//   try {
+//     const response = await carBooking(booking);
+
+//     console.log("Booking API response:", response);
+
+//     if (Array.isArray(response)) {
+//       const latestBooking =
+//         response[response.length - 1];
+
+//       if (latestBooking) {
+//         addBooking(latestBooking);
+//       }
+//     } else if (response) {
+//       addBooking(response);
+//     }
+
+//     setToast({
+//       message:
+//         "Booking request sent to admin successfully!",
+//       type: "success",
+//     });
+
+//     setTimeout(() => {
+//       navigate("/dashboard");
+//     }, 2000);
+//   } catch (error) {
+//     console.error(
+//       "Booking Error:",
+//       error.response?.data || error.message
+//     );
+
+//     const errorMessage =
+//       error.response?.data?.message ||
+//       error.response?.data ||
+//       error.message ||
+//       "Booking failed!";
+
+//     setToast({
+//       message: errorMessage,
+//       type: "error",
+//     });
+//   }
+// };
+const handleConfirmBooking = async () => {
+  // Validate step 1 fields again before submitting
+  if (!validateStep1()) {
+    setStep(1);
+    return;
+  }
+
+  // Validate driver details for self-drive booking
+  if (
+    formData.tripType === "SELF_DRIVE" &&
+    !validateStep2()
+  ) {
+    setStep(2);
+    return;
+  }
+
+  const actualCarId = car?.carId ?? car?.id;
+  const userId = Number(localStorage.getItem("userId"));
+
+  if (!userId) {
+    setToast({
+      message: "User ID is missing. Please login again.",
+      type: "error",
+    });
+    return;
+  }
+
+  if (!actualCarId) {
+    setToast({
+      message: "Car ID is missing. Please select the car again.",
+      type: "error",
+    });
+    return;
+  }
+
+  // Calculate days safely
+  const pickup = new Date(formData.pickupDate);
+  const dropoff = new Date(formData.dropoffDate);
+
+  const calculatedDays = Math.ceil(
+    (dropoff.getTime() - pickup.getTime()) /
+      (1000 * 60 * 60 * 24)
+  );
+
+  const pricePerDay = Number(car?.price);
+
+  if (
+    !Number.isFinite(calculatedDays) ||
+    calculatedDays <= 0
+  ) {
+    setToast({
+      message: "Please select valid pickup and drop-off dates.",
+      type: "error",
+    });
+    setStep(1);
+    return;
+  }
+
+  if (!Number.isFinite(pricePerDay)) {
+    setToast({
+      message: "Invalid car price.",
+      type: "error",
+    });
+    return;
+  }
+
+  const calculatedTotal =
+    pricePerDay * calculatedDays;
+
+  const bookingRequest = {
+  userId: userId,
+  carId: Number(actualCarId),
+
+  pickupDate: formData.pickupDate,
+  dropoffDate: formData.dropoffDate,
+
+  pickupLocation: formData.pickupLocation,
+  dropoffLocation: formData.dropoffLocation,
+
+  tripDriverType: formData.tripType,
+
+  days: calculatedDays,
+  price: pricePerDay,
+  total: calculatedTotal,
+
+  bookingStatus: "PENDING",
+};
+
+ console.log(
+  "Request tripDriverType:",
+  bookingRequest.tripDriverType
+);
+console.log(
+  "Complete Booking Request:",
+  bookingRequest
+);
+
+  try {
+    const response = await carBooking(bookingRequest);
+
+    console.log("Booking API response:", response);
+
+    if (Array.isArray(response)) {
+      const latestBooking =
+        response[response.length - 1];
+
+      if (latestBooking) {
+        addBooking(latestBooking);
       }
-
-      setToast({
-        message: "Booking request sent to admin successfully!",
-        type: "success",
-      });
-
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 2000);
-    } catch (error) {
-      console.error("Booking Error:", error.response?.data || error.message);
-
-      const errorMessage =
-        error.response?.data?.message || error.message || "Booking failed!";
-
-      setToast({
-        message: errorMessage,
-        type: "error",
-      });
+    } else if (response) {
+      addBooking(response);
     }
-  };
+
+    setToast({
+      message:
+        "Booking request sent to admin successfully!",
+      type: "success",
+    });
+
+    setTimeout(() => {
+      navigate("/dashboard");
+    }, 2000);
+  } catch (error) {
+    console.error(
+      "Booking Error:",
+      error.response?.data || error.message
+    );
+
+    const errorMessage =
+      error.response?.data?.message ||
+      error.response?.data ||
+      error.message ||
+      "Booking failed!";
+
+    setToast({
+      message: errorMessage,
+      type: "error",
+    });
+  }
+};
 
   const locations = ["Mumbai", "Pune", "Nashik", "Nagpur", "Nandurbar"];
 

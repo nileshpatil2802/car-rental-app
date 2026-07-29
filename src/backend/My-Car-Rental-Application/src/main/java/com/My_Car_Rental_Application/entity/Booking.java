@@ -1,6 +1,9 @@
 package com.My_Car_Rental_Application.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,8 +11,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name="Booking")
 public class Booking {
 
     @Id
@@ -19,55 +24,54 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserRequest user;
-
-   
-
-    private String carName;
-    private String brand;
-    private String mainImage;
-
-    private double price;
-
+    
+    @ManyToOne
+    @JoinColumn(name = "car_id")
+    private AdminCarsData adminCarsData;
+    
     private LocalDate pickupDate;
+
     private LocalDate dropoffDate;
-
-    private String pickupLocation;
-    private String dropoffLocation;
-
-    private String tripType;
-
+    
     private int days;
-    private double total;
 
     private String bookingStatus;
     
-    @ManyToOne
-    @JoinColumn(name = "car_id", nullable = false)
-    private AdminCarsData car;
+    private String pickupLocation;
+    
+    private String dropoffLocation;
+    
+    private String tripDriverType;
+    
+    private Double total;
+    
+    private Double price; 
+    
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
-    public Booking() {
-    }
+	public Booking() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
-	public Booking(int id, UserRequest user, String carName, String brand, String mainImage, double price,
-			LocalDate pickupDate, LocalDate dropoffDate, String pickupLocation, String dropoffLocation, String tripType,
-			int days, double total, String bookingStatus, AdminCarsData car) {
+	public Booking(int id, UserRequest user, AdminCarsData adminCarsData, LocalDate pickupDate, LocalDate dropoffDate,
+			int days, String bookingStatus, String pickupLocation, String dropoffLocation, String tripDriverType,
+			Double total, Double price, LocalDateTime createdAt) {
 		super();
 		this.id = id;
 		this.user = user;
-		
-		this.carName = carName;
-		this.brand = brand;
-		this.mainImage = mainImage;
-		this.price = price;
+		this.adminCarsData = adminCarsData;
 		this.pickupDate = pickupDate;
 		this.dropoffDate = dropoffDate;
+		this.days = days;
+		this.bookingStatus = bookingStatus;
 		this.pickupLocation = pickupLocation;
 		this.dropoffLocation = dropoffLocation;
-		this.tripType = tripType;
-		this.days = days;
+		this.tripDriverType = tripDriverType;
 		this.total = total;
-		this.bookingStatus = bookingStatus;
-		this.car = car;
+		this.price = price;
+		this.createdAt = createdAt;
 	}
 
 	public int getId() {
@@ -86,37 +90,12 @@ public class Booking {
 		this.user = user;
 	}
 
-
-	public String getCarName() {
-		return carName;
+	public AdminCarsData getAdminCarsData() {
+		return adminCarsData;
 	}
 
-	public void setCarName(String carName) {
-		this.carName = carName;
-	}
-
-	public String getBrand() {
-		return brand;
-	}
-
-	public void setBrand(String brand) {
-		this.brand = brand;
-	}
-
-	public String getMainImage() {
-		return mainImage;
-	}
-
-	public void setMainImage(String mainImage) {
-		this.mainImage = mainImage;
-	}
-
-	public double getPrice() {
-		return price;
-	}
-
-	public void setPrice(double price) {
-		this.price = price;
+	public void setAdminCarsData(AdminCarsData adminCarsData) {
+		this.adminCarsData = adminCarsData;
 	}
 
 	public LocalDate getPickupDate() {
@@ -135,6 +114,22 @@ public class Booking {
 		this.dropoffDate = dropoffDate;
 	}
 
+	public int getDays() {
+		return days;
+	}
+
+	public void setDays(int days) {
+		this.days = days;
+	}
+
+	public String getBookingStatus() {
+		return bookingStatus;
+	}
+
+	public void setBookingStatus(String bookingStatus) {
+		this.bookingStatus = bookingStatus;
+	}
+
 	public String getPickupLocation() {
 		return pickupLocation;
 	}
@@ -151,45 +146,42 @@ public class Booking {
 		this.dropoffLocation = dropoffLocation;
 	}
 
-	public String getTripType() {
-		return tripType;
+	public String getTripDriverType() {
+		return tripDriverType;
 	}
 
-	public void setTripType(String tripType) {
-		this.tripType = tripType;
+	public void setTripDriverType(String tripDriverType) {
+		this.tripDriverType = tripDriverType;
 	}
 
-	public int getDays() {
-		return days;
-	}
-
-	public void setDays(int days) {
-		this.days = days;
-	}
-
-	public double getTotal() {
+	public Double getTotal() {
 		return total;
 	}
 
-	public void setTotal(double total) {
+	public void setTotal(Double total) {
 		this.total = total;
 	}
 
-	public String getBookingStatus() {
-		return bookingStatus;
+	public Double getPrice() {
+		return price;
 	}
 
-	public void setBookingStatus(String bookingStatus) {
-		this.bookingStatus = bookingStatus;
+	public void setPrice(Double price) {
+		this.price = price;
 	}
 
-	public AdminCarsData getCar() {
-		return car;
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
 	}
 
-	public void setCar(AdminCarsData car) {
-		this.car = car;
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
 	}
+
+	
+   
+
+   
 
     
 }

@@ -1,10 +1,12 @@
 import axios from "axios";
 
+const BASE_URL = "http://localhost:8080";
+
 const CAR_IMAGE_BASE_URL ="http://localhost:8080/car-images";
 
 const API_URL = "http://localhost:8080/home/cars";
 const LOGIN = "http://localhost:8080/home/login";
-const FORGOT_PASSWORD = "http://localhost:8080/home/forgot-password";
+// const FORGOT_PASSWORD = "http://localhost:8080/home/forgot-password";
 
 const CART_API_URL = "http://localhost:8080/user/getCarts";
 const DELETE_CART_BY_ID = "http://localhost:8080/user/deleteCarts";
@@ -86,33 +88,33 @@ export const getAllCars = async () => {
   }
 };
 
-export const forgotPassword = async (email) => {
-  const response = await fetch(FORGOT_PASSWORD, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: email,
-    }),
-  });
+// export const forgotPassword = async (email) => {
+//   const response = await fetch(FORGOT_PASSWORD, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify({
+//       email: email,
+//     }),
+//   });
 
-  let data = {};
+//   let data = {};
 
-  try {
-    data = await response.json();
-  } catch (error) {
-    data = {};
-  }
+//   try {
+//     data = await response.json();
+//   } catch (error) {
+//     data = {};
+//   }
 
-  if (!response.ok) {
-    throw new Error(
-      data.message || "Unable to process forgot password request"
-    );
-  }
+//   if (!response.ok) {
+//     throw new Error(
+//       data.message || "Unable to process forgot password request"
+//     );
+//   }
 
-  return data;
-};
+//   return data;
+// };
 
 export const getCarById = async (id) => {
   try {
@@ -251,44 +253,128 @@ export const login = async (email, password) => {
 // CARTS
 // ========================
 
+// export const getAllCarts = async () => {
+
+//   try {
+
+//     const userId = localStorage.getItem("userId");
+//     console.log("I am in get all carts : ", userId);
+
+//     if (!userId) {
+//       console.error("User ID is missing");
+//       return [];
+//     }
+
+//     console.log("Getting carts for user:", userId);
+
+//     const response = await axios.get(`${CART_API_URL}/${userId}`, {
+//       headers: getAuthHeader()
+//     });
+
+//     console.log("Cart API response:", response.data);
+
+//     return response.data.map((car) => ({
+
+//       id: car.id,
+//       name: car.name,
+//       brand: car.brand,
+//       price: car.price,
+//       fuelType: car.fuelType,
+//       transmition: car.transmition,
+//       seating: car.seating,
+//       image: car.mainImage,
+//       available: car.status,
+//       img1: car.img1,
+//       img2: car.img2,
+//       img3: car.img3,
+//       rating: car.rating,
+//       reviews: car.reviews,
+//       features: [
+//         car.features?.feature1,
+//         car.features?.feature2,
+//         car.features?.feature3,
+//         car.features?.feature4,
+//         car.features?.feature5
+//       ].filter(Boolean),
+//       description: car.description
+//     }));
+//   } catch (error) {
+//     console.error("Error fetching carts:", error);
+//     return [];
+//   }
+// };
+
 export const getAllCarts = async () => {
-
   try {
-
     const userId = localStorage.getItem("userId");
-    console.log("I am in get all carts : ", userId);
 
-    const response = await axios.get(`${CART_API_URL}/${userId}`, {
-      headers: getAuthHeader()
+    if (!userId) {
+      console.error("User ID is missing");
+      return [];
+    }
+
+    const response = await axios.get(
+      `${CART_API_URL}/${userId}`,
+      {
+        headers: getAuthHeader(),
+      }
+    );
+
+    console.log("RAW CART API RESPONSE:", response.data);
+
+    if (!Array.isArray(response.data)) {
+      console.error(
+        "Cart API response is not an array:",
+        response.data
+      );
+      return [];
+    }
+
+    return response.data.map((cart) => {
+      /*
+       * New backend DTO uses cartId.
+       * Fallback to id supports an older backend response.
+       */
+      const resolvedCartId =
+        cart.cartId ?? cart.id;
+
+      console.log("Mapping cart:", {
+        backendCartId: cart.cartId,
+        backendId: cart.carId,
+        resolvedCartId,
+        carId: cart.carId,
+      });
+
+      return {
+        cartId: resolvedCartId,
+
+        // Temporary support for old frontend code
+        id: resolvedCartId,
+
+        // Actual admin_cars_data ID
+        carId: cart.carId,
+
+        userId: cart.userId,
+
+        name: cart.name,
+        brand: cart.brand,
+        price: cart.price,
+        fuelType: cart.fuelType,
+        transmition: cart.transmition,
+        seating: cart.seating,
+
+        mainImage: cart.mainImage,
+        image: cart.mainImage,
+
+        createdAt: cart.createdAt,
+      };
     });
-
-    return response.data.map((car) => ({
-
-      id: car.id,
-      name: car.name,
-      brand: car.brand,
-      price: car.price,
-      fuelType: car.fuelType,
-      transmition: car.transmition,
-      seating: car.seating,
-      image: car.mainImage,
-      available: car.status,
-      img1: car.img1,
-      img2: car.img2,
-      img3: car.img3,
-      rating: car.rating,
-      reviews: car.reviews,
-      features: [
-        car.features?.feature1,
-        car.features?.feature2,
-        car.features?.feature3,
-        car.features?.feature4,
-        car.features?.feature5
-      ].filter(Boolean),
-      description: car.description
-    }));
   } catch (error) {
-    console.error("Error fetching carts:", error);
+    console.error(
+      "Error fetching carts:",
+      error.response?.data || error.message
+    );
+
     return [];
   }
 };
@@ -377,6 +463,7 @@ export const getCartById = async (id) => {
     const response = await axios.get(`${CART_API_URL}/${id}/${userId}`, {
       headers: getAuthHeader()
     });
+    console.log("response.data :",response.data);
 
     return response.data;
   } catch (error) {
@@ -385,50 +472,95 @@ export const getCartById = async (id) => {
   }
 };
 
+// export const saveCarToCart = async (car) => {
+//   try {
+//     const userId = localStorage.getItem("userId");
+
+//     const cartData = {
+//       userId: parseInt(userId),
+//       carId: car.carId,
+//       mainImage: car.mainImage,
+//       img1: car.img1,
+//       img2: car.img2,
+//       img3: car.img3,
+//       status: car.status,
+//       fuelType: car.fuelType,
+//       name: car.name,
+//       seating: car.seating,
+//       transmition: car.transmition,
+//       price: car.price,
+//       description: car.description,
+//       brand: car.brand,
+//       rating: car.rating,
+//       reviews: car.reviews,
+
+//       features: {
+//         feature1: car.features?.feature1,
+//         feature2: car.features?.feature2,
+//         feature3: car.features?.feature3,
+//         feature4: car.features?.feature4,
+//         feature5: car.features?.feature5
+//       }
+//     };
+
+//     console.log("Cart data : ", cartData);
+
+//     const response = await axios.post(
+//       "http://localhost:8080/user/cart",
+//       cartData,
+//       {
+//         headers: getAuthHeader()
+//       }
+//     );
+
+//     return response.data;
+//   } catch (error) {
+//     console.error("Error saving cart:", error);
+//     throw error;
+//   }
+// };
+
 export const saveCarToCart = async (car) => {
   try {
     const userId = localStorage.getItem("userId");
 
-    const cartData = {
-      userId: parseInt(userId),
-      carId: car.id,
-      mainImage: car.mainImage,
-      img1: car.img1,
-      img2: car.img2,
-      img3: car.img3,
-      status: car.status,
-      fuelType: car.fuelType,
-      name: car.name,
-      seating: car.seating,
-      transmition: car.transmition,
-      price: car.price,
-      description: car.description,
-      brand: car.brand,
-      rating: car.rating,
-      reviews: car.reviews,
+    if (!userId) {
+      throw new Error("User is not logged in");
+    }
 
-      features: {
-        feature1: car.features?.feature1,
-        feature2: car.features?.feature2,
-        feature3: car.features?.feature3,
-        feature4: car.features?.feature4,
-        feature5: car.features?.feature5
-      }
+    // Get the actual AdminCarsData ID
+    const actualCarId = car.carId ?? car.id;
+
+    if (!actualCarId) {
+      throw new Error("Car ID is missing");
+    }
+
+    const cartData = {
+      userId: Number(userId),
+      carId: Number(actualCarId),
     };
 
-    console.log("Cart data : ", cartData);
+    console.log("Car Object:", car);
+    console.log("Cart Request:", cartData);
 
     const response = await axios.post(
       "http://localhost:8080/user/cart",
       cartData,
       {
-        headers: getAuthHeader()
+        headers: {
+          ...getAuthHeader(),
+          "Content-Type": "application/json",
+        },
       }
     );
 
     return response.data;
   } catch (error) {
-    console.error("Error saving cart:", error);
+    console.error(
+      "Error saving cart:",
+      error.response?.data || error.message
+    );
+
     throw error;
   }
 };
@@ -481,6 +613,145 @@ export const saveCarToCart = async (car) => {
 //   }
 // };
 
+// export const carBooking = async (booking) => {
+//   try {
+//     const userId = localStorage.getItem("userId");
+
+//     if (!userId) {
+//       throw new Error("User is not logged in");
+//     }
+
+//     if (!booking.carId) {
+//       throw new Error("Car ID is missing");
+//     }
+
+//     console.log("Car id is : ",booking.carId);
+
+//     const bookingData = {
+//       userId: Number(userId),
+
+//       carId: Number(booking.carId),
+      
+
+//       carName: booking.carName,
+//       brand: booking.brand,
+//       mainImage: booking.mainImage,
+
+//       price: Number(booking.price),
+
+//       pickupDate: booking.pickupDate,
+//       dropoffDate: booking.dropoffDate,
+
+//       pickupLocation: booking.pickupLocation,
+//       dropoffLocation: booking.dropoffLocation,
+
+//       tripType: booking.tripType,
+
+//       days: Number(booking.days),
+//       total: Number(booking.total),
+
+//       bookingStatus: "PENDING",
+//     };
+
+//     console.log("Booking Request:", bookingData);
+
+//     const response = await axios.post(
+//       "http://localhost:8080/user/booking",
+//       bookingData,
+//       {
+//         headers: getAuthHeader(),
+//       }
+//     );
+
+//     return response.data;
+
+//   } catch (error) {
+//     console.error(
+//       "Booking Error:",
+//       error.response?.data || error.message
+//     );
+
+//     throw error;
+//   }
+// };
+
+// export const carBooking = async (booking) => {
+//   try {
+//     const userId =
+//       localStorage.getItem("userId");
+
+//     if (!userId) {
+//       throw new Error(
+//         "User is not logged in"
+//       );
+//     }
+
+//     if (!booking?.carId) {
+//       throw new Error(
+//         "Car ID is missing"
+//       );
+//     }
+
+//     const bookingData = {
+//       userId: Number(userId),
+
+//       carId: Number(booking.carId),
+
+//       // carName:
+//       //   booking.carName ?? booking.name,
+
+//       // brand: booking.brand,
+
+//       // mainImage:
+//       //   booking.mainImage ??
+//       //   booking.image,
+
+//        price: Number(booking.price),
+
+//       pickupDate: booking.pickupDate,
+//       dropoffDate: booking.dropoffDate,
+
+//       pickupLocation:
+//         booking.pickupLocation,
+
+//       dropoffLocation:
+//         booking.dropoffLocation,
+
+//       tripDriverType: booking.tripDriverType,
+//       days: Number(booking.days),
+//       total: Number(booking.total),
+
+//       bookingStatus: "PENDING",
+//     };
+
+//     console.log(
+//       "Booking Request:",
+//       bookingData
+//     );
+
+//     const response = await axios.post(
+//       "http://localhost:8080/user/booking",
+//       bookingData,
+//       {
+//         headers: {
+//           ...getAuthHeader(),
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "Booking Error:",
+//       error.response?.data ||
+//         error.message
+//     );
+
+//     throw error;
+//   }
+// };
+
 export const carBooking = async (booking) => {
   try {
     const userId = localStorage.getItem("userId");
@@ -489,18 +760,13 @@ export const carBooking = async (booking) => {
       throw new Error("User is not logged in");
     }
 
-    if (!booking.carId) {
+    if (!booking?.carId) {
       throw new Error("Car ID is missing");
     }
 
     const bookingData = {
       userId: Number(userId),
-
       carId: Number(booking.carId),
-
-      carName: booking.carName,
-      brand: booking.brand,
-      mainImage: booking.mainImage,
 
       price: Number(booking.price),
 
@@ -510,7 +776,7 @@ export const carBooking = async (booking) => {
       pickupLocation: booking.pickupLocation,
       dropoffLocation: booking.dropoffLocation,
 
-      tripType: booking.tripType,
+      tripDriverType: booking.tripDriverType,
 
       days: Number(booking.days),
       total: Number(booking.total),
@@ -524,21 +790,28 @@ export const carBooking = async (booking) => {
       "http://localhost:8080/user/booking",
       bookingData,
       {
-        headers: getAuthHeader(),
+        headers: {
+          ...getAuthHeader(),
+          "Content-Type": "application/json",
+        },
       }
     );
 
     return response.data;
-
   } catch (error) {
-    console.error(
-      "Booking Error:",
-      error.response?.data || error.message
-    );
+    console.error("Full booking error:", error);
+    console.error("Backend response:", error.response?.data);
 
-    throw error;
+    const backendMessage =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Unable to book this car";
+
+    throw new Error(backendMessage);
   }
 };
+
 export const deleteCartById = async (id) => {
   try {
     const response = await axios.post(
@@ -1147,4 +1420,115 @@ export const updateUserRole = async (id, role) => {
     console.error("Error updating user status:", error);
     throw error;
   }
+};
+
+// reset password 
+const FORGOT_PASSWORD =
+  `${BASE_URL}/home/forgot-password`;
+
+const VALIDATE_RESET_TOKEN =
+  `${BASE_URL}/home/validate-reset-token`;
+
+const RESET_PASSWORD =
+  `${BASE_URL}/home/reset-password`;
+
+const parseResponse = async (response) => {
+  const contentType =
+    response.headers.get("content-type");
+
+  if (
+    contentType &&
+    contentType.includes("application/json")
+  ) {
+    return response.json();
+  }
+
+  const text = await response.text();
+
+  return {
+    message:
+      text || "Unexpected server response",
+  };
+};
+
+export const forgotPassword = async (email) => {
+  const response = await fetch(
+    FORGOT_PASSWORD,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email.trim(),
+      }),
+    }
+  );
+
+  const data = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ||
+        "Unable to send password reset email"
+    );
+  }
+
+  return data;
+};
+
+export const validateResetToken = async (
+  token
+) => {
+  const response = await fetch(
+    `${VALIDATE_RESET_TOKEN}?token=${encodeURIComponent(
+      token
+    )}`,
+    {
+      method: "GET",
+    }
+  );
+
+  const data = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ||
+        "Unable to validate reset token"
+    );
+  }
+
+  return data;
+};
+
+export const resetPassword = async ({
+  token,
+  newPassword,
+  confirmPassword,
+}) => {
+  const response = await fetch(
+    RESET_PASSWORD,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        token,
+        newPassword,
+        confirmPassword,
+      }),
+    }
+  );
+
+  const data = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ||
+        "Unable to reset password"
+    );
+  }
+
+  return data;
 };

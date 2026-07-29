@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.My_Car_Rental_Application.dto.BookingResponseDto;
 import com.My_Car_Rental_Application.dto.CarsDataRequestDto;
 import com.My_Car_Rental_Application.entity.AdminCarsData;
 import com.My_Car_Rental_Application.entity.Booking;
@@ -76,8 +77,8 @@ public class AdminController {
 	}
 	
 	@GetMapping("/getBookingRecords")
-	public List<Booking> BookingRecords() {
-		List<Booking> bookingRecords = adService.BookingRecords();
+	public List<BookingResponseDto> BookingRecords() {
+		List<BookingResponseDto> bookingRecords = adService.BookingRecords();
 		System.out.println("Booking Records : "+bookingRecords);
 		return bookingRecords;
 	}

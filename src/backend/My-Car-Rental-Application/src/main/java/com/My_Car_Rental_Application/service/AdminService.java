@@ -2,6 +2,7 @@ package com.My_Car_Rental_Application.service;
 
 import java.util.List;
 
+import com.My_Car_Rental_Application.dto.BookingResponseDto;
 import com.My_Car_Rental_Application.dto.CarsDataRequestDto;
 import com.My_Car_Rental_Application.entity.AdminCarsData;
 import com.My_Car_Rental_Application.entity.Booking;
@@ -25,7 +26,7 @@ public interface AdminService {
 
 	Booking updateBookingStatus(int bookingId, String bookingStatus);
 
-	List<Booking> BookingRecords();
+	List<BookingResponseDto> BookingRecords();
 
 	void deleteBooking(int bookingId);
 

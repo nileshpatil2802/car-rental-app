@@ -4,9 +4,11 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
-
+import com.My_Car_Rental_Application.dto.AddToCartDto;
 import com.My_Car_Rental_Application.dto.BookingDto;
+import com.My_Car_Rental_Application.dto.BookingResponseDto;
 import com.My_Car_Rental_Application.dto.CarsDataRequestDto;
+import com.My_Car_Rental_Application.dto.CartResponseDto;
 import com.My_Car_Rental_Application.entity.Booking;
 import com.My_Car_Rental_Application.entity.Cart;
 import com.My_Car_Rental_Application.entity.UserDocuments;
@@ -14,11 +16,11 @@ import com.My_Car_Rental_Application.entity.UserRequest;
 
 public interface UserService {
 	
-	List<Cart> addCart(CarsDataRequestDto acd);
-	
-	List<Cart> getAllCarts(int userId);
 
-	Cart getCartById(int id,int userId);
+	
+	List<CartResponseDto> getAllCarts(int userId);
+
+	CartResponseDto getCartById(int id,int userId);
 
 	void deleteCart(int id);
 
@@ -26,11 +28,11 @@ public interface UserService {
 
 	UserRequest updateUserProfile(UserRequest userRequest, String email);
 
-	List<Booking> booking(BookingDto booking);
+	List<BookingResponseDto> booking(BookingDto booking);
 
 	void cancelBooking(int bookingId, int userId);
 
-	List<Booking> getBookingList(int id);
+	List<BookingResponseDto> getBookingList(int id);
 
 	UserDocuments uploadDocuments(
 	        int userId,
@@ -43,6 +45,8 @@ public interface UserService {
 	List<UserRequest> getAllUsers();
 
 	List<UserDocuments> DocumentList();
+
+	List<CartResponseDto> addCart(AddToCartDto acd);
 
 
 }
